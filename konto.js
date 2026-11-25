@@ -16,8 +16,19 @@ async function load(){
     import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`),
     import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`)]);
   const app = appM.initializeApp(FIREBASE_CONFIG);
-  fb = {A, F, auth:A.getAuth(app), db:F.getFirestore(app)};
+  fb = {A, F, appM, auth:A.getAuth(app), db:F.getFirestore(app)};
   return fb;
+}
+// Druga, niezależna sesja: nauczyciel zakłada w niej konta uczniów, nie wylogowując się.
+let fb2 = null;
+async function load2(){
+  const {A, F, appM} = await load();
+  if (fb2) return fb2;
+  const app2 = appM.initializeApp(FIREBASE_CONFIG, 'zakladanie-kont');
+  const auth2 = A.getAuth(app2);
+  await A.setPersistence(auth2, A.inMemoryPersistence);
+  fb2 = {auth:auth2, db:F.getFirestore(app2)};
+  return fb2;
 }
 
 /* ---------- pomocnicze ---------- */
@@ -85,19 +96,25 @@ export async function zarejestrujUcznia(kod, login, haslo){
   const {A, F, auth, db} = await load();
   const kl = await F.getDoc(F.doc(db, 'classes', kod));
   if (!kl.exists()) throw new Error('Nie ma klasy o takim kodzie. Zapytaj nauczyciela o kod.');
-  const {teacherUid, name} = kl.data();
+  if ((await F.getDoc(F.doc(db, 'logins', `${kod}_${login}`))).exists()) throw new Error('Taki login jest już zajęty w tej klasie. Wybierz inny.');
   const cred = await A.createUserWithEmailAndPassword(auth, email(kod, login), haslo);
-  const uid = cred.user.uid;
-  await F.setDoc(F.doc(db, 'users', uid), {role:'student', login, classCode:kod, className:name || kod, teacherUid, createdAt:F.serverTimestamp()});
-  await F.setDoc(F.doc(db, 'progress', uid), {uid, login, classCode:kod, teacherUid, decks:{}, updatedAt:F.serverTimestamp()}, {merge:true});
-  profil = await wczytajProfil(uid);
+  await zapiszUcznia(F, db, cred.user.uid, {login, name:'', kod, kl:kl.data(), em:email(kod, login)});
+  profil = await wczytajProfil(cred.user.uid);
   return profil;
+}
+// Zapisuje profil, postęp i mapę loginu ucznia (jako ten uczeń).
+async function zapiszUcznia(F, db, uid, {login, name, kod, kl, em, decks}){
+  await F.setDoc(F.doc(db, 'users', uid), {role:'student', login, name:name || '', classCode:kod, className:kl.name || kod, teacherUid:kl.teacherUid, createdAt:F.serverTimestamp()});
+  await F.setDoc(F.doc(db, 'progress', uid), {uid, login, name:name || '', classCode:kod, teacherUid:kl.teacherUid, decks:decks || {}, updatedAt:F.serverTimestamp()}, {merge:true});
+  if (em) await F.setDoc(F.doc(db, 'logins', `${kod}_${login}`), {uid, login, classCode:kod, email:em});
 }
 
 export async function zalogujUcznia(kod, login, haslo){
   kod = czyscKod(kod); login = czyscLogin(login);
-  const {A, auth} = await load();
-  await A.signInWithEmailAndPassword(auth, email(kod, login), haslo);
+  const {A, F, auth, db} = await load();
+  let em = email(kod, login);
+  try { const m = await F.getDoc(F.doc(db, 'logins', `${kod}_${login}`)); if (m.exists()) em = m.data().email; } catch(e) {}
+  await A.signInWithEmailAndPassword(auth, em, haslo);
 }
 
 export async function zarejestrujNauczyciela(adres, haslo, imie){
@@ -183,10 +200,59 @@ export async function uczniowieKlasy(kod){
   const q = F.query(F.collection(db, 'progress'), F.where('teacherUid', '==', profil.uid), F.where('classCode', '==', kod));
   return (await F.getDocs(q)).docs.map(d => d.data()).sort((a, b) => a.login.localeCompare(b.login, 'pl'));
 }
-export async function usunUcznia(uid){
+export async function wszyscyUczniowie(){
+  const {F, db} = await load();
+  const q = F.query(F.collection(db, 'progress'), F.where('teacherUid', '==', profil.uid));
+  return (await F.getDocs(q)).docs.map(d => d.data());
+}
+export async function usunUcznia(uid, kod, login){
   const {F, db} = await load();
   await F.deleteDoc(F.doc(db, 'progress', uid));
   await F.deleteDoc(F.doc(db, 'users', uid));
+  if (kod && login) { try { const m = await F.getDoc(F.doc(db, 'logins', `${kod}_${login}`)); if (m.exists() && m.data().uid === uid) await F.deleteDoc(m.ref); } catch(e) {} }
+}
+
+/* ---------- nauczyciel zakłada konta uczniów ---------- */
+const SYL = ['ba', 'be', 'bo', 'da', 'do', 'fa', 'ga', 'ka', 'ko', 'la', 'le', 'lo', 'ma', 'me', 'mo', 'na', 'no', 'pa', 'po', 'ra', 're', 'ro', 'sa', 'so', 'ta', 'to', 'wa', 'za'];
+export const noweHasloTekst = () => Array.from({length:3}, () => SYL[Math.floor(Math.random()*SYL.length)]).join('') + (10 + Math.floor(Math.random()*90));
+export function loginZImienia(pelne){
+  const cz = czyscLogin(pelne).split('.').filter(Boolean);
+  if (!cz.length) return '';
+  const l = cz.length > 1 ? `${cz[0]}.${cz[cz.length - 1][0]}` : cz[0];
+  return l.replace(/[^a-z0-9._-]/g, '').slice(0, 20);
+}
+// Zakłada konta dla listy osób. Zwraca [{name, login, haslo, blad}].
+export async function utworzKontaUczniow(kod, osoby, postep){
+  const {A, F, db} = await load(), s2 = await load2();
+  const kl = (await F.getDoc(F.doc(db, 'classes', kod))).data();
+  const wynik = [];
+  for (const name of osoby) {
+    const baza = loginZImienia(name); let login = baza, n = 1;
+    if (!baza || baza.length < 3) { wynik.push({name, blad:'Za krótkie imię i nazwisko'}); continue; }
+    while ((await F.getDoc(F.doc(db, 'logins', `${kod}_${login}`))).exists() || wynik.some(w => w.login === login)) login = baza + (++n);
+    const haslo = noweHasloTekst(), em = email(kod, login);
+    try {
+      const cred = await A.createUserWithEmailAndPassword(s2.auth, em, haslo);
+      await zapiszUcznia(F, s2.db, cred.user.uid, {login, name:name.trim(), kod, kl, em});
+      await A.signOut(s2.auth);
+      wynik.push({name:name.trim(), login, haslo});
+    } catch(e) { wynik.push({name, login, blad:komunikat(e)}); try { await A.signOut(s2.auth); } catch(_) {} }
+    if (postep) postep(wynik.length, osoby.length);
+  }
+  return wynik;
+}
+// „Nowe hasło”: zakłada uczniowi nowe konto z tym samym loginem i przenosi jego wyniki.
+export async function noweHasloUcznia(s){
+  const {A, F, db} = await load(), s2 = await load2();
+  const kod = s.classCode, kl = (await F.getDoc(F.doc(db, 'classes', kod))).data();
+  const haslo = noweHasloTekst(), em = `${s.login}--${kod.toLowerCase()}--${losowe(4).toLowerCase()}@${DOMENA}`;
+  const cred = await A.createUserWithEmailAndPassword(s2.auth, em, haslo);
+  await F.setDoc(F.doc(db, 'logins', `${kod}_${s.login}`), {uid:cred.user.uid, login:s.login, classCode:kod, email:em});
+  await zapiszUcznia(F, s2.db, cred.user.uid, {login:s.login, name:s.name, kod, kl, decks:s.decks || {}});
+  await A.signOut(s2.auth);
+  await F.deleteDoc(F.doc(db, 'progress', s.uid));
+  await F.deleteDoc(F.doc(db, 'users', s.uid));
+  return {login:s.login, haslo, name:s.name};
 }
 
 /* ---------- integracja z prezentacją ---------- */

@@ -29,8 +29,20 @@ service cloud.firestore {
       allow create: if signedIn() && request.auth.uid == uid
         && request.resource.data.role == 'student'
         && exists(/databases/$(database)/documents/classes/$(request.resource.data.classCode))
-        && request.resource.data.teacherUid == klasa(request.resource.data.classCode).teacherUid;
+        && request.resource.data.teacherUid == klasa(request.resource.data.classCode).teacherUid
+        && (!exists(/databases/$(database)/documents/logins/$(request.resource.data.classCode + '_' + request.resource.data.login))
+            || get(/databases/$(database)/documents/logins/$(request.resource.data.classCode + '_' + request.resource.data.login)).data.uid == request.auth.uid);
       allow delete: if signedIn() && resource.data.teacherUid == request.auth.uid;
+    }
+
+    // Mapa loginów: pozwala zalogować się loginem także po nadaniu nowego hasła.
+    match /logins/{id} {
+      allow get: if true;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid
+        && id == request.resource.data.classCode + '_' + request.resource.data.login
+        && uczen(request.auth.uid).classCode == request.resource.data.classCode
+        && uczen(request.auth.uid).login == request.resource.data.login;
+      allow update, delete: if signedIn() && klasa(resource.data.classCode).teacherUid == request.auth.uid;
     }
 
     // Postęp: uczeń zapisuje tylko swój, nauczyciel czyta postęp uczniów swoich klas.

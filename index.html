@@ -415,7 +415,7 @@ async function pokazPostep(p){
   const pr = await K.mojPostep();
   const decks = (pr && pr.decks) || {}, pk = K.punkty(decks), M = window.MATERIALY.filter(m => m.klucz);
   const D = m => decks[m.klucz] || {}, P = m => pk.parts[m.klucz] || {wyzwania:0, quiz:0, trening:0, krzyzowka:0, gra:0, suma:0};
-  $('meName').textContent = p.login; $('meCls').textContent = 'Klasa ' + (p.className || p.classCode);
+  $('meName').textContent = p.name || p.login; $('meCls').textContent = 'Klasa ' + (p.className || p.classCode);
   $('mePts').textContent = pk.total;
   $('stab-mat').innerHTML = M.map(m => { const d = D(m), w = (d.wyzwania || []).length, wt = d.wyzwaniaTotal || m.wyzwania; return `
     <div class="pcard" style="--klass:var(${m.kolor})">

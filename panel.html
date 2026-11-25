@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Układ: pasek, logowanie albo panel (lista klas po lewej, tabela uczniów po prawej) */
+/* Układ: pasek; logowanie albo panel: lista klas po lewej, klasa (uczniowie + punkty) po prawej */
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
 :root{
@@ -34,15 +34,18 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);fo
 .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:18px;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:18px;color:var(--ink);text-decoration:none}
 .logo svg{width:32px;height:32px}
-.logo span{color:var(--muted);font-weight:700}
+.logo span{color:var(--muted)}
 h1{font-family:var(--f-display);font-size:clamp(28px,4vw,40px);margin:8px 0 6px;letter-spacing:-.01em}
-h2{font-family:var(--f-display);font-size:20px;margin:0 0 10px}
+h2{font-family:var(--f-display);font-size:24px;margin:0}
+h3{font-family:var(--f-display);font-size:20px;margin:0}
 .muted{color:var(--muted)}
-.btn{font:600 14px var(--f-body);padding:9px 15px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn{font:600 14px var(--f-body);padding:9px 15px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .btn.dark{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.btn.danger{color:var(--bad);border-color:color-mix(in srgb, var(--bad) 40%, var(--line))}
+.btn.pri{background:var(--pri);color:#fff;border-color:var(--pri)}
+.btn.sm{padding:5px 11px;font-size:13px}
+.btn.danger{color:var(--bad)}
 .btn:disabled{opacity:.5;cursor:default}
-button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
 .auth{max-width:440px;margin:30px auto 0;display:grid;gap:14px}
 .tabs{display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:999px}
@@ -51,39 +54,69 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 form{display:grid;gap:12px}
 .fld{display:grid;gap:4px}
 .fld label{font-size:14px;font-weight:600}
-.fld input{font:500 16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+.fld input,textarea{font:500 16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+textarea{width:100%;min-height:200px;resize:vertical;font-size:15px;line-height:1.6}
 .err{color:var(--bad);font-size:14px;margin:0;min-height:1em}
 .okm{color:var(--good);font-size:14px;margin:0}
-.layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px;align-items:start;margin-top:16px}
+.layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:20px;align-items:start;margin-top:16px}
 .classes{display:grid;gap:8px}
-.cls{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.cls{display:grid;gap:2px;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
 .cls[aria-current="true"]{border-color:var(--pri);box-shadow:0 0 0 2px var(--pri-soft)}
-.cls b{font-weight:600}
+.cls .t{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.cls b{font-weight:700;font-size:16px}
 .cls code{font:500 12px var(--f-mono);color:var(--muted)}
-.newcls{display:flex;gap:8px;margin-top:6px}
+.cls small{color:var(--muted);font-size:13px}
+.cls.all{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cls.all small{color:inherit;opacity:.75}
+.newcls{display:flex;gap:8px;margin-top:10px}
 .newcls input{flex:1;min-width:0;font:500 15px var(--f-body);padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
-.code{font:600 26px var(--f-mono);letter-spacing:.08em;color:var(--pri)}
-.share{display:flex;flex-wrap:wrap;gap:16px 30px;align-items:center;justify-content:space-between}
-.howto{font-size:14px;color:var(--muted);margin:6px 0 0}
-.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin:18px 0 10px}
+.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:14px 24px}
+.code{font:600 24px var(--f-mono);letter-spacing:.08em;color:var(--pri)}
+.stats{display:flex;flex-wrap:wrap;gap:10px 30px;margin:16px 0}
+.stats div{display:flex;flex-direction:column}
+.stats b{font:700 26px var(--f-display);font-variant-numeric:tabular-nums}
+.stats span{font-size:12.5px;color:var(--muted)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.tools .sp{flex:1}
 .tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
-table{width:100%;border-collapse:collapse;min-width:860px;font-size:14px}
-th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle}
 thead th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--bg)}
-thead tr.grp th{font-family:var(--f-display);font-size:14px;text-transform:none;letter-spacing:0;color:var(--ink)}
-th.k7{border-top:3px solid var(--k7)} th.k8{border-top:3px solid var(--k8)}
-td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
-tr:last-child td{border-bottom:0}
-.bar-s{display:inline-block;width:60px;height:7px;border-radius:4px;background:var(--bg);vertical-align:middle;margin-right:6px;overflow:hidden}
+th.k7{box-shadow:inset 0 3px 0 var(--k7)} th.k8{box-shadow:inset 0 3px 0 var(--k8)}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--pri-soft)}
+.who b{display:block;font-weight:600}
+.who small{font:500 12.5px var(--f-mono);color:var(--muted)}
+.pts{display:inline-block;min-width:52px;text-align:center;padding:3px 10px;border-radius:999px;background:var(--ink);color:var(--glow);font:700 15px var(--f-mono)}
+.det{display:none}
+.showdet .det{display:table-cell}
+.bar-s{display:inline-block;width:46px;height:6px;border-radius:3px;background:var(--bg);vertical-align:middle;margin-right:6px;overflow:hidden}
 .bar-s i{display:block;height:100%;background:var(--pri)}
-.empty{padding:30px;text-align:center;color:var(--muted)}
-.ptsc{display:inline-block;min-width:44px;text-align:center;padding:2px 8px;border-radius:999px;background:var(--ink);color:var(--glow);font:700 14px var(--f-mono)}
+.empty{padding:34px;text-align:center;color:var(--muted)}
+.empty .btn{margin-top:12px}
+.acts{display:flex;gap:6px;justify-content:flex-end}
 .rules{margin:14px 0 0;font-size:13px;color:var(--muted)}
-.sumrow{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:4px}
-.sumrow div{display:flex;flex-direction:column}
-.sumrow b{font:500 22px var(--f-mono)}
-.sumrow span{font-size:12.5px;color:var(--muted)}
-@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+dialog{border:1px solid var(--line);border-radius:18px;padding:0;background:var(--surface);color:var(--ink);width:min(640px, calc(100vw - 32px));box-shadow:0 24px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(11,16,32,.45)}
+.dlg{padding:22px 24px 24px;display:grid;gap:14px;position:relative}
+.x{position:absolute;top:12px;right:14px;border:0;background:transparent;font-size:24px;cursor:pointer;color:var(--muted)}
+.res{max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.res table{font-size:14px}
+.res td.pw{font:600 15px var(--f-mono);color:var(--pri)}
+.warn{background:color-mix(in srgb, var(--acc) 15%, var(--surface));border:1px solid color-mix(in srgb, var(--acc) 45%, var(--line));border-radius:10px;padding:10px 12px;font-size:14px}
+#printArea{display:none}
+@media print{
+  body{background:#fff;color:#000}
+  .wrap,dialog{display:none!important}
+  #printArea{display:block!important}
+  .card{display:inline-block;width:48%;margin:0 1% 10px 0;border:1.5px dashed #555;border-radius:8px;padding:12px 14px;font:14px/1.5 system-ui,sans-serif;break-inside:avoid;vertical-align:top}
+  .card h4{margin:0 0 6px;font-size:17px}
+  .card code{font:700 16px ui-monospace,Consolas,monospace}
+  .plist{width:100%;border-collapse:collapse;font:14px system-ui,sans-serif}
+  .plist th,.plist td{border:1px solid #999;padding:6px 8px;text-align:left}
+}
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -98,12 +131,12 @@ tr:last-child td{border-bottom:0}
 
   <div id="off" class="box auth" hidden>
     <h2>Logowanie nie jest jeszcze włączone</h2>
-    <p class="muted">Trzeba połączyć stronę z projektem Firebase. Instrukcja jest w pliku INSTRUKCJA.md w repozytorium.</p>
+    <p class="muted">Trzeba połączyć stronę z projektem Firebase. Instrukcja jest w pliku INSTRUKCJA.md.</p>
   </div>
 
   <div id="viewAuth" class="box auth" hidden>
     <h1>Panel nauczyciela</h1>
-    <p class="muted" style="margin:0">Twórz klasy, podawaj uczniom kody i sprawdzaj ich wyniki w prezentacjach.</p>
+    <p class="muted" style="margin:0">Twórz klasy, zakładaj uczniom konta i sprawdzaj ich punkty.</p>
     <div class="tabs" role="tablist">
       <button role="tab" id="tL" aria-selected="true">Logowanie</button>
       <button role="tab" id="tR" aria-selected="false">Nowe konto</button>
@@ -114,6 +147,7 @@ tr:last-child td{border-bottom:0}
       <p class="err" id="lErr" aria-live="polite"></p>
       <button class="btn dark" type="submit">Zaloguj się</button>
       <button class="btn" type="button" id="forgot" style="justify-self:start">Nie pamiętam hasła</button>
+      <p class="okm" id="lOk" aria-live="polite"></p>
     </form>
     <form id="fR" novalidate hidden>
       <div class="fld"><label for="rN">Imię i nazwisko</label><input id="rN" autocomplete="name" required></div>
@@ -127,12 +161,11 @@ tr:last-child td{border-bottom:0}
 
   <div id="viewStudent" class="box auth" hidden>
     <h2>To panel dla nauczycieli</h2>
-    <p class="muted">Jesteś zalogowany jako uczeń. Swoje wyniki zobaczysz na stronie głównej.</p>
+    <p class="muted">Jesteś zalogowany jako uczeń. Swoje punkty zobaczysz na stronie głównej.</p>
     <a class="btn dark" href="./" style="justify-self:start">Wróć do materiałów</a>
   </div>
 
   <div id="viewPanel" hidden>
-    <h1>Twoje klasy</h1>
     <div class="layout">
       <aside>
         <div class="classes" id="clsList"></div>
@@ -143,35 +176,79 @@ tr:last-child td{border-bottom:0}
         </form>
         <p class="err" id="nErr" aria-live="polite"></p>
       </aside>
-      <section id="clsView">
-        <div class="box empty" id="noCls">Dodaj pierwszą klasę po lewej. Dostaniesz kod, który podasz uczniom.</div>
-        <div id="clsBody" hidden>
-          <div class="box share">
-            <div>
-              <div class="muted" style="font-size:13px">Kod klasy <span id="cName"></span></div>
-              <div class="code" id="cCode"></div>
-              <p class="howto">Uczniowie wchodzą na <b>mateuszl28.github.io/fizyka</b> → „Zaloguj się” → „Załóż konto” i wpisują ten kod.</p>
+
+      <section>
+        <!-- widok: wszystkie klasy -->
+        <div id="vAll" class="box" hidden>
+          <h2>Wszystkie klasy</h2>
+          <div class="stats" id="allStats"></div>
+          <div class="tablewrap"><table id="allTbl"></table></div>
+        </div>
+
+        <!-- widok: jedna klasa -->
+        <div id="vCls" hidden>
+          <div class="box">
+            <div class="head">
+              <div>
+                <p class="muted" style="margin:0;font-size:13px">Klasa</p>
+                <h2 id="cName"></h2>
+                <p class="muted" style="margin:6px 0 0;font-size:14px">Kod klasy: <span class="code" id="cCode"></span></p>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn pri" id="addBtn">+ Dodaj uczniów</button>
+                <button class="btn" id="copyMsg">Kopiuj wiadomość dla uczniów</button>
+              </div>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn" id="copyCode">Kopiuj kod</button>
-              <button class="btn" id="copyMsg">Kopiuj wiadomość dla uczniów</button>
+            <div class="stats" id="sum"></div>
+            <div class="tools">
+              <button class="btn sm" id="detBtn" aria-pressed="false">Pokaż szczegóły</button>
+              <span class="sp"></span>
+              <button class="btn sm" id="refresh">Odśwież</button>
+              <button class="btn sm" id="printList">Drukuj listę</button>
+              <button class="btn sm" id="csv">Pobierz CSV</button>
             </div>
+            <div class="tablewrap" id="tblWrap"><table id="tbl"></table></div>
+            <p class="rules" id="rules"></p>
           </div>
-          <div class="tools">
-            <div class="sumrow" id="sum"></div>
-            <div style="display:flex;gap:8px">
-              <button class="btn" id="refresh">Odśwież</button>
-              <button class="btn" id="csv">Pobierz CSV</button>
-            </div>
-          </div>
-          <div class="tablewrap"><table id="tbl"></table></div>
-          <p class="rules" id="rules"></p>
-          <p class="muted" style="font-size:13px;margin-top:10px">„Usuń” kasuje wyniki i profil ucznia z tej klasy. Uczeń, który zapomni hasła, może założyć nowe konto, a stare usuniesz tutaj.</p>
         </div>
       </section>
     </div>
   </div>
 </div>
+
+<dialog id="dAdd" aria-labelledby="dAddH">
+  <div class="dlg">
+    <button class="x" data-close aria-label="Zamknij">×</button>
+    <h3 id="dAddH">Dodaj uczniów do klasy <span id="dAddCls"></span></h3>
+    <div id="addForm" style="display:grid;gap:12px">
+      <p class="muted" style="margin:0">Wklej listę uczniów: jedna osoba w jednej linii, imię i nazwisko. Panel założy każdemu konto i wymyśli login oraz hasło.</p>
+      <label for="names" style="position:absolute;left:-9999px">Lista uczniów</label>
+      <textarea id="names" placeholder="Anna Kowalska&#10;Jan Nowak&#10;Ola Wiśniewska"></textarea>
+      <p class="muted" style="margin:0;font-size:13px">Wystarczy imię i pierwsza litera nazwiska, np. „Anna K.”. Zapisujemy tylko to, co wpiszesz.</p>
+      <p class="err" id="addErr" aria-live="polite"></p>
+      <button class="btn pri" id="addGo" style="justify-self:start">Utwórz konta</button>
+    </div>
+    <div id="addRes" hidden style="display:grid;gap:12px">
+      <p class="warn"><b>Zapisz albo wydrukuj te hasła teraz.</b> Nie przechowujemy ich, więc później nie będzie ich widać. Gdy ktoś zgubi hasło, kliknij przy nim „Nowe hasło”.</p>
+      <div class="res"><table id="resTbl"></table></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn pri" id="printCards">Drukuj kartki dla uczniów</button>
+        <button class="btn" id="copyRes">Kopiuj listę</button>
+        <button class="btn" data-close>Gotowe</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dPw" aria-labelledby="dPwH">
+  <div class="dlg">
+    <button class="x" data-close aria-label="Zamknij">×</button>
+    <h3 id="dPwH">Nowe hasło</h3>
+    <div id="pwBody"></div>
+  </div>
+</dialog>
+
+<div id="printArea"></div>
 
 <script type="module">
 import * as K from './konto.js';
@@ -179,14 +256,19 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
 const DECKS = [{k:'cisnienie', n:'Ciśnienie (kl. 7)', w:52, q:18, c:'k7'}, {k:'prad', n:'Prąd (kl. 8)', w:31, q:18, c:'k8'}];
 const show = v => ['off', 'viewAuth', 'viewStudent', 'viewPanel'].forEach(id => $(id).hidden = id !== v);
-let klasy = [], wybrana = null, dane = [];
+let klasy = [], wybrana = 'ALL', wszyscy = [], ostatnie = [];
+const nazwa = s => s.name || s.login;
+const data = t => t && t.toDate ? t.toDate() : null;
+const kiedy = d => d ? d.toLocaleString('pl-PL', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : '—';
+document.querySelectorAll('dialog').forEach(d => { d.addEventListener('click', e => { if (e.target === d || e.target.hasAttribute('data-close')) d.close(); }); });
 
 if (!K.configured) show('off');
 $('rules').innerHTML = '<b>Punktacja:</b> ' + K.ZASADY.map(([a, b]) => `${a.toLowerCase()}: ${b}`).join(' · ');
 
+/* ---------- logowanie nauczyciela ---------- */
 const tab = r => { $('tL').setAttribute('aria-selected', !r); $('tR').setAttribute('aria-selected', r); $('fL').hidden = r; $('fR').hidden = !r; };
 $('tL').onclick = () => tab(false); $('tR').onclick = () => tab(true);
-const busy = (f, on) => f.querySelectorAll('button,input').forEach(x => x.disabled = on);
+const busy = (f, on) => f.querySelectorAll('button,input,textarea').forEach(x => x.disabled = on);
 $('fL').addEventListener('submit', async e => {
   e.preventDefault(); $('lErr').textContent = ''; busy($('fL'), true);
   try { await K.zalogujNauczyciela($('lE').value, $('lP').value); } catch(err) { $('lErr').textContent = K.komunikat(err); }
@@ -194,7 +276,7 @@ $('fL').addEventListener('submit', async e => {
 });
 $('forgot').onclick = async () => {
   if (!$('lE').value.trim()) { $('lErr').textContent = 'Wpisz adres e-mail, a wyślemy link do zmiany hasła.'; return; }
-  try { await K.resetHaslaNauczyciela($('lE').value); $('lErr').textContent = ''; $('lErr').insertAdjacentHTML('afterend', '<p class="okm">Wysłaliśmy link do zmiany hasła. Sprawdź skrzynkę, także folder spam.</p>'); }
+  try { await K.resetHaslaNauczyciela($('lE').value); $('lErr').textContent = ''; $('lOk').textContent = 'Wysłaliśmy link do zmiany hasła. Sprawdź skrzynkę, także folder spam.'; }
   catch(err) { $('lErr').textContent = K.komunikat(err); }
 };
 $('fR').addEventListener('submit', async e => {
@@ -206,69 +288,131 @@ $('fR').addEventListener('submit', async e => {
   busy($('fR'), false);
 });
 
+/* ---------- dane ---------- */
+async function wczytaj(){
+  [klasy, wszyscy] = await Promise.all([K.mojeKlasy(), K.wszyscyUczniowie()]);
+  wszyscy.forEach(s => s._pk = K.punkty(s.decks));
+  rysujKlasy();
+  if (wybrana !== 'ALL' && !klasy.some(k => k.kod === wybrana)) wybrana = 'ALL';
+  pokaz();
+}
+const wKlasie = kod => wszyscy.filter(s => s.classCode === kod).sort((a, b) => b._pk.total - a._pk.total || nazwa(a).localeCompare(nazwa(b), 'pl'));
+const sumaPkt = arr => arr.reduce((a, s) => a + s._pk.total, 0);
+
 function rysujKlasy(){
-  $('clsList').innerHTML = klasy.map(k => `<button class="cls" data-k="${esc(k.kod)}" aria-current="${wybrana === k.kod}"><b>${esc(k.name)}</b><code>${esc(k.kod)}</code></button>`).join('');
-  $('clsList').querySelectorAll('.cls').forEach(b => b.onclick = () => wybierz(b.dataset.k));
-  $('noCls').hidden = !!wybrana; $('clsBody').hidden = !wybrana;
+  const all = `<button class="cls all" data-k="ALL" aria-current="${wybrana === 'ALL'}"><span class="t"><b>Wszystkie klasy</b></span><small>${klasy.length} klas · ${wszyscy.length} uczniów</small></button>`;
+  $('clsList').innerHTML = all + klasy.map(k => { const u = wKlasie(k.kod); return `<button class="cls" data-k="${esc(k.kod)}" aria-current="${wybrana === k.kod}"><span class="t"><b>${esc(k.name)}</b><code>${esc(k.kod)}</code></span><small>${u.length} uczniów · ${sumaPkt(u)} pkt</small></button>`; }).join('');
+  $('clsList').querySelectorAll('.cls').forEach(b => b.onclick = () => { wybrana = b.dataset.k; rysujKlasy(); pokaz(); });
 }
-async function wczytajKlasy(){ klasy = await K.mojeKlasy(); if (!wybrana && klasy.length) wybrana = klasy[0].kod; rysujKlasy(); if (wybrana) await wybierz(wybrana); }
-async function wybierz(kod){
-  wybrana = kod; rysujKlasy();
-  const k = klasy.find(x => x.kod === kod);
-  $('cCode').textContent = kod; $('cName').textContent = '· ' + (k ? k.name : '');
-  $('tbl').innerHTML = '<tbody><tr><td class="empty">Wczytuję…</td></tr></tbody>';
-  try { dane = await K.uczniowieKlasy(kod); rysujTabele(); } catch(err) { $('tbl').innerHTML = `<tbody><tr><td class="empty">${esc(K.komunikat(err))}</td></tr></tbody>`; }
+function pokaz(){ $('vAll').hidden = wybrana !== 'ALL'; $('vCls').hidden = wybrana === 'ALL'; wybrana === 'ALL' ? rysujWszystkie() : rysujKlase(); }
+
+function rysujWszystkie(){
+  const n = wszyscy.length, s = sumaPkt(wszyscy);
+  $('allStats').innerHTML = `<div><b>${klasy.length}</b><span>klas</span></div><div><b>${n}</b><span>uczniów</span></div><div><b>${s}</b><span>punktów razem</span></div><div><b>${n ? Math.round(s/n) : 0}</b><span>średnio na ucznia</span></div>`;
+  if (!klasy.length) { $('allTbl').innerHTML = '<tbody><tr><td class="empty">Dodaj pierwszą klasę po lewej.</td></tr></tbody>'; return; }
+  $('allTbl').innerHTML = `<thead><tr><th>Klasa</th><th>Kod</th><th class="n">Uczniów</th><th class="n">Punkty razem</th><th class="n">Średnio</th><th>Najwięcej punktów</th><th></th></tr></thead><tbody>` +
+    klasy.map(k => { const u = wKlasie(k.kod), t = sumaPkt(u); return `<tr><td><b>${esc(k.name)}</b></td><td><code>${esc(k.kod)}</code></td><td class="n">${u.length}</td><td class="n"><span class="pts">${t}</span></td><td class="n">${u.length ? Math.round(t/u.length) : 0}</td><td>${u.length ? `${esc(nazwa(u[0]))} (${u[0]._pk.total} pkt)` : '—'}</td><td><button class="btn sm" data-k="${esc(k.kod)}">Otwórz →</button></td></tr>`; }).join('') + '</tbody>';
+  $('allTbl').querySelectorAll('button[data-k]').forEach(b => b.onclick = () => { wybrana = b.dataset.k; rysujKlasy(); pokaz(); });
 }
-const data = t => t && t.toDate ? t.toDate() : null;
-const kiedy = d => d ? d.toLocaleString('pl-PL', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : '—';
-function wiersz(s){
+
+function kolumny(s){
   return DECKS.map(D => {
-    const d = (s.decks && s.decks[D.k]) || {}, w = (d.wyzwania || []).length, wt = d.wyzwaniaTotal || D.w;
-    return {w, wt, quiz:d.quizBest != null ? `${d.quizBest}/${d.quizTotal || D.q}` : d.quizAnswered ? `${d.quizLast}/${d.quizAnswered}…` : '—', tren:d.treningPoprawne || 0, best:d.treningBest || 0, krz:d.krzyzowka ? '✓' : '—'};
+    const d = (s.decks && s.decks[D.k]) || {}, w = (d.wyzwania || []).length, wt = d.wyzwaniaTotal || D.w, p = s._pk.parts[D.k] || {suma:0};
+    return {p:p.suma, w, wt, quiz:d.quizBest != null ? `${d.quizBest}/${d.quizTotal || D.q}` : '—', tren:d.treningPoprawne || 0, krz:d.krzyzowka ? '✓' : '—'};
   });
 }
-function rysujTabele(){
-  const n = dane.length;
-  dane.forEach(s => s._pk = K.punkty(s.decks));
-  dane.sort((a, b) => b._pk.total - a._pk.total || a.login.localeCompare(b.login, 'pl'));
-  const ostatnio = dane.filter(s => { const d = data(s.updatedAt); return d && Date.now() - d < 7*864e5; }).length;
-  const suma = dane.reduce((a, s) => a + s._pk.total, 0);
-  $('sum').innerHTML = `<div><b>${n}</b><span>uczniów</span></div><div><b>${n ? Math.round(suma/n) : 0}</b><span>średnio punktów</span></div><div><b>${n ? dane[0]._pk.total : 0}</b><span>najwięcej punktów</span></div><div><b>${ostatnio}</b><span>aktywnych w tym tygodniu</span></div>`;
-  if (!n) { $('tbl').innerHTML = '<tbody><tr><td class="empty">Nikt jeszcze nie dołączył do tej klasy. Podaj uczniom kod.</td></tr></tbody>'; return; }
-  const head = `<thead><tr class="grp"><th colspan="3"></th>${DECKS.map(D => `<th colspan="5" class="${D.c}">${D.n}</th>`).join('')}<th colspan="2"></th></tr>
-    <tr><th>#</th><th>Uczeń</th><th>Punkty</th>${DECKS.map(() => '<th>Pkt</th><th>Wyzwania</th><th>Quiz</th><th>Trening</th><th>Krzyżówka</th>').join('')}<th>Ostatnio</th><th></th></tr></thead>`;
-  const body = dane.map((s, i) => `<tr><td class="n">${i + 1}.</td><td><b>${esc(s.login)}</b></td><td class="n"><b class="ptsc">${s._pk.total}</b></td>${wiersz(s).map((r, k) => `<td class="n">${(s._pk.parts[DECKS[k].k] || {suma:0}).suma}</td><td class="n"><span class="bar-s"><i style="width:${Math.round(r.w/r.wt*100)}%"></i></span>${r.w}/${r.wt}</td><td class="n">${r.quiz}</td><td class="n">${r.tren} (seria ${r.best})</td><td>${r.krz}</td>`).join('')}<td class="n">${kiedy(data(s.updatedAt))}</td><td><button class="btn danger" data-u="${esc(s.uid)}">Usuń</button></td></tr>`).join('');
-  $('tbl').innerHTML = head + '<tbody>' + body + '</tbody>';
-  $('tbl').querySelectorAll('button[data-u]').forEach(b => b.onclick = async () => {
-    if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Na pewno usunąć?'; setTimeout(() => { b.dataset.sure = ''; b.textContent = 'Usuń'; }, 4000); return; }
-    b.disabled = true;
-    try { await K.usunUcznia(b.dataset.u); await wybierz(wybrana); } catch(err) { b.textContent = K.komunikat(err); }
+function rysujKlase(){
+  const k = klasy.find(x => x.kod === wybrana); if (!k) return;
+  $('cName').textContent = k.name; $('cCode').textContent = k.kod;
+  const u = wKlasie(k.kod), n = u.length, t = sumaPkt(u);
+  const akt = u.filter(s => { const d = data(s.updatedAt); return d && Date.now() - d < 7*864e5 && s._pk.total > 0; }).length;
+  $('sum').innerHTML = `<div><b>${n}</b><span>uczniów</span></div><div><b>${t}</b><span>punktów razem</span></div><div><b>${n ? Math.round(t/n) : 0}</b><span>średnio na ucznia</span></div><div><b>${akt}</b><span>aktywnych w tym tygodniu</span></div>`;
+  if (!n) { $('tbl').innerHTML = '<tbody><tr><td class="empty">W tej klasie nie ma jeszcze uczniów.<br><button class="btn pri" id="addBtn2">+ Dodaj uczniów</button></td></tr></tbody>'; $('addBtn2').onclick = otworzDodawanie; return; }
+  $('tbl').innerHTML = `<thead><tr><th class="n">#</th><th>Uczeń</th><th class="n">Punkty</th>${DECKS.map(D => `<th class="n ${D.c}">${D.n}</th><th class="det">Wyzwania</th><th class="det">Quiz</th><th class="det n">Trening</th><th class="det">Krzyżówka</th>`).join('')}<th>Ostatnio</th><th></th></tr></thead><tbody>` +
+    u.map((s, i) => `<tr><td class="n">${i + 1}.</td><td class="who"><b>${esc(nazwa(s))}</b><small>login: ${esc(s.login)}</small></td><td class="n"><span class="pts">${s._pk.total}</span></td>${kolumny(s).map(r => `<td class="n">${r.p}</td><td class="det"><span class="bar-s"><i style="width:${Math.round(r.w/r.wt*100)}%"></i></span>${r.w}/${r.wt}</td><td class="det">${r.quiz}</td><td class="det n">${r.tren}</td><td class="det">${r.krz}</td>`).join('')}<td class="muted">${kiedy(data(s.updatedAt))}</td><td><div class="acts"><button class="btn sm" data-pw="${esc(s.uid)}">Nowe hasło</button><button class="btn sm danger" data-del="${esc(s.uid)}">Usuń</button></div></td></tr>`).join('') + '</tbody>';
+  $('tbl').querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Na pewno?'; setTimeout(() => { b.dataset.sure = ''; b.textContent = 'Usuń'; }, 4000); return; }
+    const s = wszyscy.find(x => x.uid === b.dataset.del); b.disabled = true;
+    try { await K.usunUcznia(s.uid, s.classCode, s.login); await wczytaj(); } catch(err) { b.textContent = K.komunikat(err); }
+  });
+  $('tbl').querySelectorAll('[data-pw]').forEach(b => b.onclick = async () => {
+    const s = wszyscy.find(x => x.uid === b.dataset.pw); b.disabled = true; b.textContent = 'Chwila…';
+    try {
+      const r = await K.noweHasloUcznia(s); ostatnie = [r];
+      $('pwBody').innerHTML = `<p class="muted">Nowe dane logowania. Wyniki ucznia zostały zachowane.</p><div class="res"><table><thead><tr><th>Uczeń</th><th>Kod klasy</th><th>Login</th><th>Hasło</th></tr></thead><tbody><tr><td>${esc(nazwa(r))}</td><td><code>${esc(wybrana)}</code></td><td><code>${esc(r.login)}</code></td><td class="pw">${esc(r.haslo)}</td></tr></tbody></table></div><p class="warn">Zapisz albo wydrukuj to hasło. Później nie będzie widoczne.</p><div style="display:flex;gap:8px"><button class="btn pri" id="pwPrint">Drukuj kartkę</button><button class="btn" data-close>Gotowe</button></div>`;
+      $('pwPrint').onclick = () => drukujKartki(ostatnie);
+      $('dPw').showModal(); await wczytaj();
+    } catch(err) { b.textContent = K.komunikat(err); b.disabled = false; }
   });
 }
+$('detBtn').onclick = () => { const on = $('tblWrap').classList.toggle('showdet'); $('detBtn').setAttribute('aria-pressed', on); $('detBtn').textContent = on ? 'Ukryj szczegóły' : 'Pokaż szczegóły'; };
+$('refresh').onclick = () => wczytaj();
+
+/* ---------- nowa klasa ---------- */
 $('fNew').addEventListener('submit', async e => {
   e.preventDefault(); $('nErr').textContent = '';
   const nm = $('newName').value.trim(); if (!nm) { $('nErr').textContent = 'Wpisz nazwę klasy.'; return; }
   busy($('fNew'), true);
-  try { const kod = await K.utworzKlase(nm); $('newName').value = ''; wybrana = kod; await wczytajKlasy(); } catch(err) { $('nErr').textContent = K.komunikat(err); }
+  try { const kod = await K.utworzKlase(nm); $('newName').value = ''; wybrana = kod; await wczytaj(); } catch(err) { $('nErr').textContent = K.komunikat(err); }
   busy($('fNew'), false);
 });
-const kopiuj = async (txt, btn) => { const t = btn.textContent; try { await navigator.clipboard.writeText(txt); btn.textContent = 'Skopiowano ✓'; } catch(e) { btn.textContent = 'Zaznacz i skopiuj ręcznie'; } setTimeout(() => btn.textContent = t, 2000); };
-$('copyCode').onclick = () => kopiuj(wybrana, $('copyCode'));
-$('copyMsg').onclick = () => kopiuj(`Materiały z fizyki: ${K.HUB}\nKliknij „Zaloguj się” → „Załóż konto” i wpisz kod klasy: ${wybrana}\nJako login wpisz imię i pierwszą literę nazwiska, np. ola.k (bez polskich znaków).`, $('copyMsg'));
-$('refresh').onclick = () => wybierz(wybrana);
+
+/* ---------- dodawanie uczniów ---------- */
+function otworzDodawanie(){
+  $('dAddCls').textContent = (klasy.find(k => k.kod === wybrana) || {}).name || '';
+  $('addForm').hidden = false; $('addRes').hidden = true; $('addErr').textContent = ''; $('names').value = '';
+  $('dAdd').showModal(); setTimeout(() => $('names').focus(), 50);
+}
+$('addBtn').onclick = otworzDodawanie;
+$('addGo').onclick = async () => {
+  const osoby = $('names').value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  if (!osoby.length) { $('addErr').textContent = 'Wpisz przynajmniej jedną osobę.'; return; }
+  if (osoby.length > 40) { $('addErr').textContent = 'Naraz można dodać do 40 osób.'; return; }
+  busy($('addForm'), true); $('addErr').textContent = '';
+  try {
+    const wynik = await K.utworzKontaUczniow(wybrana, osoby, (a, b) => { $('addGo').textContent = `Zakładam konta… ${a} / ${b}`; });
+    ostatnie = wynik.filter(w => w.haslo);
+    $('resTbl').innerHTML = `<thead><tr><th>Uczeń</th><th>Login</th><th>Hasło</th></tr></thead><tbody>` + wynik.map(w => `<tr><td>${esc(w.name)}</td><td><code>${esc(w.login || '—')}</code></td><td class="pw">${w.haslo ? esc(w.haslo) : `<span class="err">${esc(w.blad)}</span>`}</td></tr>`).join('') + '</tbody>';
+    $('addForm').hidden = true; $('addRes').hidden = false;
+    await wczytaj();
+  } catch(err) { $('addErr').textContent = K.komunikat(err); }
+  busy($('addForm'), false); $('addGo').textContent = 'Utwórz konta';
+};
+$('copyRes').onclick = async () => {
+  const txt = `Kod klasy: ${wybrana}\nStrona: ${K.HUB}\n\n` + ostatnie.map(w => `${w.name}\tlogin: ${w.login}\thasło: ${w.haslo}`).join('\n');
+  try { await navigator.clipboard.writeText(txt); $('copyRes').textContent = 'Skopiowano ✓'; } catch(e) { $('copyRes').textContent = 'Nie udało się skopiować'; }
+  setTimeout(() => $('copyRes').textContent = 'Kopiuj listę', 2000);
+};
+function drukujKartki(lista){
+  const kl = klasy.find(k => k.kod === wybrana) || {};
+  $('printArea').innerHTML = lista.map(w => `<div class="card"><h4>${esc(w.name)}</h4>Strona: <b>mateuszl28.github.io/fizyka</b><br>Kod klasy: <code>${esc(wybrana)}</code><br>Login: <code>${esc(w.login)}</code><br>Hasło: <code>${esc(w.haslo)}</code><br><small>Klasa ${esc(kl.name || '')}. Kliknij „Zaloguj się” i wpisz te dane.</small></div>`).join('');
+  window.print();
+}
+$('printCards').onclick = () => drukujKartki(ostatnie);
+$('printList').onclick = () => {
+  const k = klasy.find(x => x.kod === wybrana) || {}, u = wKlasie(wybrana);
+  $('printArea').innerHTML = `<h2 style="font:700 20px system-ui">Klasa ${esc(k.name)}: punkty (${new Date().toLocaleDateString('pl-PL')})</h2><table class="plist"><thead><tr><th>#</th><th>Uczeń</th><th>Login</th><th>Punkty</th>${DECKS.map(D => `<th>${D.n}</th>`).join('')}</tr></thead><tbody>${u.map((s, i) => `<tr><td>${i + 1}</td><td>${esc(nazwa(s))}</td><td>${esc(s.login)}</td><td><b>${s._pk.total}</b></td>${kolumny(s).map(r => `<td>${r.p}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  window.print();
+};
+$('copyMsg').onclick = async () => {
+  const txt = `Materiały z fizyki: ${K.HUB}\nKliknij „Zaloguj się” i wpisz kod klasy: ${wybrana} oraz login i hasło z kartki.\nJeśli nie masz kartki: „Załóż konto”, kod klasy ${wybrana}, login: imię i pierwsza litera nazwiska (np. ola.k).`;
+  try { await navigator.clipboard.writeText(txt); $('copyMsg').textContent = 'Skopiowano ✓'; } catch(e) { $('copyMsg').textContent = 'Nie udało się skopiować'; }
+  setTimeout(() => $('copyMsg').textContent = 'Kopiuj wiadomość dla uczniów', 2000);
+};
 $('csv').onclick = () => {
-  const k = klasy.find(x => x.kod === wybrana);
-  const rows = [['Miejsce', 'Uczeń', 'Punkty', ...DECKS.flatMap(D => [D.n + ' punkty', D.n + ' wyzwania', D.n + ' quiz', D.n + ' trening poprawne', D.n + ' krzyżówka']), 'Ostatnia aktywność']];
-  dane.forEach((s, i) => rows.push([i + 1, s.login, s._pk.total, ...wiersz(s).flatMap((r, k) => [(s._pk.parts[DECKS[k].k] || {suma:0}).suma, `${r.w}/${r.wt}`, r.quiz, r.tren, r.krz === '✓' ? 'tak' : 'nie']), kiedy(data(s.updatedAt))]));
+  const k = klasy.find(x => x.kod === wybrana) || {}, u = wKlasie(wybrana);
+  const rows = [['Miejsce', 'Uczeń', 'Login', 'Punkty', ...DECKS.flatMap(D => [D.n + ' punkty', D.n + ' wyzwania', D.n + ' quiz', D.n + ' trening', D.n + ' krzyżówka']), 'Ostatnia aktywność']];
+  u.forEach((s, i) => rows.push([i + 1, nazwa(s), s.login, s._pk.total, ...kolumny(s).flatMap(r => [r.p, `${r.w}/${r.wt}`, r.quiz, r.tren, r.krz === '✓' ? 'tak' : 'nie']), kiedy(data(s.updatedAt))]));
   const csv = '﻿' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'})); a.download = `wyniki-${(k ? k.name : wybrana).replace(/\s+/g, '_')}.csv`; a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'})); a.download = `punkty-${(k.name || wybrana).replace(/\s+/g, '_')}.csv`; a.click();
 };
 
+/* ---------- start ---------- */
 K.naZmianeKonta(async p => {
   if (!p) { $('who').innerHTML = ''; show('viewAuth'); return; }
   $('who').innerHTML = `<span class="muted" style="margin-right:10px">${esc(p.name || p.email || p.login || '')}</span><button class="btn" id="out">Wyloguj</button>`;
   $('out').onclick = () => K.wyloguj();
-  if (p.role === 'teacher') { show('viewPanel'); try { await wczytajKlasy(); } catch(err) { $('nErr').textContent = K.komunikat(err); } }
+  if (p.role === 'teacher') { show('viewPanel'); try { await wczytaj(); } catch(err) { $('nErr').textContent = K.komunikat(err); } }
   else show('viewStudent');
 }).catch(console.error);
 </script>
