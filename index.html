@@ -282,6 +282,13 @@ const MATERIALY = [
     opis:'Co płynie w przewodach, gdy zapalasz światło? Obwody, amperomierz i woltomierz, prawo Ohma, połączenia szeregowe i równoległe, moc prądu i bezpieczeństwo.',
     tematy:['I = q/t', 'U = W/q', 'prawo Ohma', 'opór', 'szeregowo i równolegle', 'moc i kWh', 'bezpiecznik', 'bezpieczeństwo'],
     slajdy:34, pytania:18, wyzwania:31, data:'2026-11-25'
+  },
+  {
+    tytul:'Quiz: jak mierzymy ciśnienie, ciśnienie hydrostatyczne i atmosferyczne', klasa:7, art:'quiz', kolor:'--k7', klucz:'quiz7', typ:'quiz',
+    url:'https://mateuszl28.github.io/fizyka/quiz-cisnienie.html',
+    opis:'Sprawdź się przed kartkówką: przyrządy i jednostki ciśnienia, ciśnienie w cieczach i ciśnienie atmosferyczne. Pytania z wyborem odpowiedzi i zadania rachunkowe z wyjaśnieniami.',
+    tematy:['barometr i manometr', 'hPa i Pa', 'p = ρgh', 'paradoks hydrostatyczny', 'Torricelli', 'ciśnienie a wysokość'],
+    slajdy:0, pytania:24, wyzwania:0, data:'2026-11-26'
   }
 ];
 window.MATERIALY = MATERIALY;
@@ -289,7 +296,8 @@ const SKROTY = [['Quiz', 'quiz'], ['Zadania', 'zadania'], ['Krzyżówka', 'krzyz
 
 const $ = id => document.getElementById(id);
 const sum = k => MATERIALY.reduce((a, m) => a + (m[k] || 0), 0);
-$('stats').innerHTML = [[MATERIALY.length, MATERIALY.length === 1 ? 'prezentacja' : 'prezentacje'], [sum('slajdy'), 'slajdów'], [sum('pytania'), 'pytań w quizach'], [sum('wyzwania'), 'wyzwań']].map(([n, t]) => `<div><b>${n}</b><span>${t}</span></div>`).join('');
+const nPrez = MATERIALY.filter(m => m.typ !== 'quiz').length, nQuiz = MATERIALY.filter(m => m.typ === 'quiz').length;
+$('stats').innerHTML = [[nPrez, nPrez === 1 ? 'prezentacja' : 'prezentacje'], [nQuiz, nQuiz === 1 ? 'quiz' : 'quizy'], [sum('slajdy'), 'slajdów'], [sum('pytania'), 'pytań w quizach'], [sum('wyzwania'), 'wyzwań']].map(([n, t]) => `<div><b>${n}</b><span>${t}</span></div>`).join('');
 const last = MATERIALY.map(m => m.data).sort().pop();
 $('upd').textContent = 'Ostatnia aktualizacja: ' + new Date(last).toLocaleDateString('pl-PL', {day:'numeric', month:'long', year:'numeric'});
 
@@ -311,6 +319,12 @@ const ART = {
     <circle cx="340" cy="105" r="34" fill="var(--glow)" opacity=".35"/><circle cx="340" cy="105" r="18" fill="var(--glow)" stroke="var(--ink)" stroke-width="2.5"/><path d="M328 93 L352 117 M352 93 L328 117" stroke="var(--ink)" stroke-width="2"/>
     <g fill="var(--k8)"><circle cx="110" cy="50" r="5"/><circle cx="170" cy="50" r="5"/><circle cx="230" cy="50" r="5"/><circle cx="290" cy="50" r="5"/><circle cx="120" cy="160" r="5"/><circle cx="190" cy="160" r="5"/><circle cx="260" cy="160" r="5"/></g>
     <path d="M200 70 l-14 24 h12 l-6 26 22-32 h-12 l8-18z" fill="var(--acc)"/>
+  </svg>`,
+  quiz: `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="400" height="200" fill="var(--k7)" opacity=".16"/>
+    <g font-family="Bricolage Grotesque, sans-serif" font-weight="800"><text x="70" y="135" font-size="110" fill="var(--k7)" opacity=".85">?</text><text x="300" y="120" font-size="70" fill="var(--acc)">?</text></g>
+    <rect x="150" y="52" width="150" height="26" rx="8" fill="var(--surface)" stroke="var(--line)"/><rect x="150" y="88" width="150" height="26" rx="8" fill="var(--surface)" stroke="var(--k7)" stroke-width="2.5"/><rect x="150" y="124" width="150" height="26" rx="8" fill="var(--surface)" stroke="var(--line)"/>
+    <circle cx="166" cy="101" r="7" fill="var(--k7)"/><path d="M162 101 l3 3 6-6" stroke="#fff" stroke-width="2" fill="none"/>
   </svg>`,
   inne: `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="400" height="200" fill="var(--pri)" opacity=".12"/></svg>`
 };
@@ -337,9 +351,9 @@ function render(){
         <h3>${m.tytul}</h3>
         <p>${m.opis}</p>
         <ul class="tags">${m.tematy.map(t => `<li>${t}</li>`).join('')}</ul>
-        <div class="meta"><span>${m.slajdy} slajdów</span><span>${m.pytania} pytań</span><span>${m.wyzwania} wyzwań</span></div>
-        <div class="actions"><a class="btn main" href="${m.url}">Otwórz prezentację →</a></div>
-        <div class="quick" aria-label="Szybkie linki">${SKROTY.map(([t, h]) => `<a href="${m.url}#${h}">${t}</a>`).join('')}</div>
+        <div class="meta">${m.typ === 'quiz' ? `<span>${m.pytania} pytań</span><span>do ${m.pytania*2} pkt</span>` : `<span>${m.slajdy} slajdów</span><span>${m.pytania} pytań</span><span>${m.wyzwania} wyzwań</span>`}</div>
+        <div class="actions"><a class="btn main" href="${m.url}">${m.typ === 'quiz' ? 'Rozwiąż quiz' : 'Otwórz prezentację'} →</a></div>
+        ${m.typ === 'quiz' ? '' : `<div class="quick" aria-label="Szybkie linki">${SKROTY.map(([t, h]) => `<a href="${m.url}#${h}">${t}</a>`).join('')}</div>`}
       </div>
     </article>`).join('') + (wybrana === 'all' && !fraza ? `<div class="soon"><b>Kolejne tematy wkrótce</b><span>Nowe materiały pojawią się tutaj w miarę omawiania działów na lekcjach.</span></div>` : '');
   if (!lista.length) g.innerHTML = '<p class="empty">Nie znaleziono materiałów. Spróbuj innego słowa albo wybierz „Wszystkie”.</p>';
@@ -417,21 +431,22 @@ async function pokazPostep(p){
   const D = m => decks[m.klucz] || {}, P = m => pk.parts[m.klucz] || {wyzwania:0, quiz:0, trening:0, krzyzowka:0, gra:0, suma:0};
   $('meName').textContent = p.name || p.login; $('meCls').textContent = 'Klasa ' + (p.className || p.classCode);
   $('mePts').textContent = pk.total;
-  $('stab-mat').innerHTML = M.map(m => { const d = D(m), w = (d.wyzwania || []).length, wt = d.wyzwaniaTotal || m.wyzwania; return `
+  const MP = M.filter(m => m.typ !== 'quiz');
+  $('stab-mat').innerHTML = MP.map(m => { const d = D(m), w = (d.wyzwania || []).length, wt = d.wyzwaniaTotal || m.wyzwania; return `
     <div class="pcard" style="--klass:var(${m.kolor})">
       <h4>${m.tytul}</h4>
       <div class="prow"><span>Klasa ${m.klasa} · ${m.slajdy} slajdów</span><b>${P(m).suma} pkt</b></div>
       <div class="prow"><span>Zaliczone wyzwania</span><b>${w} / ${wt}</b></div>${bar(w, wt)}
       <div class="links"><a class="btn-s dark" href="${m.url}">Otwórz prezentację →</a><a class="btn-s" href="${m.url}#podsumowanie">Podsumowanie</a><a class="btn-s" href="${m.url}#slowniczek">Słowniczek</a></div>
     </div>`; }).join('');
-  $('stab-quiz').innerHTML = M.map(m => { const d = D(m), t = d.quizTotal || m.pytania, st = d.quizBest != null ? `${d.quizBest} / ${t}` : d.quizAnswered ? `w trakcie: ${d.quizAnswered} z ${t} pytań` : 'jeszcze nie rozwiązany'; return `
+  $('stab-quiz').innerHTML = [...M.filter(m => m.typ === 'quiz'), ...MP].map(m => { const d = D(m), t = d.quizTotal || m.pytania, st = d.quizBest != null ? `${d.quizBest} / ${t}` : d.quizAnswered ? `w trakcie: ${d.quizAnswered} z ${t} pytań` : 'jeszcze nie rozwiązany'; return `
     <div class="pcard" style="--klass:var(${m.kolor})">
-      <h4>Quiz: ${m.tytul}</h4>
+      <h4>${m.typ === 'quiz' ? m.tytul : 'Quiz w prezentacji: ' + m.tytul}</h4>
       <div class="prow"><span>Najlepszy wynik</span><b>${st}</b></div>${bar(d.quizBest || 0, t)}
       <div class="prow"><span>Punkty za quiz</span><b>${P(m).quiz} pkt</b></div>
-      <div class="links"><a class="btn-s dark" href="${m.url}#quiz">${d.quizBest != null ? 'Popraw wynik' : 'Rozwiąż quiz'} →</a></div>
+      <div class="links"><a class="btn-s dark" href="${m.typ === 'quiz' ? m.url : m.url + '#quiz'}">${d.quizBest != null ? 'Popraw wynik' : 'Rozwiąż quiz'} →</a></div>
     </div>`; }).join('');
-  $('stab-zad').innerHTML = M.map(m => { const d = D(m); return `
+  $('stab-zad').innerHTML = MP.map(m => { const d = D(m); return `
     <div class="pcard" style="--klass:var(${m.kolor})">
       <h4>Zadania: ${m.tytul}</h4>
       <div class="prow"><span>Trening: poprawne zadania</span><b>${d.treningPoprawne || 0}</b></div>

@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz: pomiar ciśnienia · klasa 7</title>
+<meta name="description" content="Quiz z fizyki dla klasy 7: jak mierzymy ciśnienie, ciśnienie hydrostatyczne i atmosferyczne.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232C7BB6'/%3E%3Cpath d='M16 5c-5 7-8 11-8 15a8 8 0 0 0 16 0c0-4-3-8-8-15z' fill='%23FFD35A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Układ: jedna kolumna; ekran startowy → pytanie po pytaniu → wynik z omówieniem */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+:root{
+  --bg:#EEF3F7; --surface:#FFFFFF; --ink:#0F2433; --muted:#53687A; --line:#C6D4DE;
+  --pri:#2C7BB6; --pri-soft:rgba(44,123,182,.13); --acc:#C9741A; --good:#2B8551; --bad:#BF3F28; --glow:#FFD35A;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1620; --surface:#12212C; --ink:#E3ECF2; --muted:#93A8B7; --line:#2A3E4C;
+  --pri:#58A8E0; --pri-soft:rgba(88,168,224,.16); --acc:#F0A040; --good:#5BC488; --bad:#EC7460; --glow:#FFD96A; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0B1620; --surface:#12212C; --ink:#E3ECF2; --muted:#93A8B7; --line:#2A3E4C;
+  --pri:#58A8E0; --pri-soft:rgba(88,168,224,.16); --acc:#F0A040; --good:#5BC488; --bad:#EC7460; --glow:#FFD96A; color-scheme:dark }
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55}
+.wrap{max-width:820px;margin:0 auto;padding-left:max(18px, env(safe-area-inset-left, 0px));padding-right:max(18px, env(safe-area-inset-right, 0px));padding-bottom:48px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:18px;flex-wrap:wrap}
+.back{font:600 14px var(--f-body);color:var(--muted);text-decoration:none;padding:6px 12px;border:1px solid var(--line);border-radius:999px}
+.who{font-size:14px;color:var(--muted)}
+.who b{color:var(--ink)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);margin:0 0 10px}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(32px,5.4vw,52px);line-height:1.06;letter-spacing:-.02em;margin:0 0 14px;text-wrap:balance}
+h2{font-family:var(--f-display);font-size:clamp(22px,3vw,28px);line-height:1.2;margin:0 0 16px;text-wrap:balance}
+.lead{color:var(--muted);font-size:18px;margin:0 0 20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px}
+.parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:18px 0 22px}
+.part{border:1px solid var(--line);border-left:4px solid var(--pri);border-radius:12px;padding:12px 14px;background:var(--bg)}
+.part b{display:block;font-family:var(--f-display);font-size:17px}
+.part span{font-size:14px;color:var(--muted)}
+.btn{font:600 16px var(--f-body);padding:12px 22px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn.main{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible,a:focus-visible,label:focus-within{outline:2px solid var(--acc);outline-offset:2px}
+.note{font-size:14px;color:var(--muted);border-left:3px solid var(--acc);padding:2px 0 2px 12px;margin:16px 0 0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;font:500 14px var(--f-mono);color:var(--muted);margin-bottom:8px}
+.prog{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:18px}
+.prog i{display:block;height:100%;background:var(--pri);transition:width .3s ease}
+.sect{display:inline-block;font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--pri);background:var(--pri-soft);padding:4px 10px;border-radius:999px;margin-bottom:12px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;font:500 16px var(--f-body);padding:13px 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;width:100%}
+.opt .k{flex:none;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font:600 13px var(--f-mono);background:var(--bg);color:var(--muted)}
+.opt:hover:not(:disabled){border-color:var(--pri)}
+.opt[aria-pressed="true"]{border-color:var(--pri);background:var(--pri-soft)}
+.opt[aria-pressed="true"] .k{background:var(--pri);color:#fff}
+.opt.ok{border-color:var(--good);background:color-mix(in srgb, var(--good) 12%, var(--surface))}
+.opt.ok .k{background:var(--good);color:#fff}
+.opt.no{border-color:var(--bad);background:color-mix(in srgb, var(--bad) 10%, var(--surface))}
+.opt.no .k{background:var(--bad);color:#fff}
+.opt:disabled{cursor:default}
+.num{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.num input{font:500 20px var(--f-mono);padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);width:220px;max-width:100%}
+.num .u{font:600 18px var(--f-mono);color:var(--muted)}
+.hint{font-size:14px;color:var(--muted);margin:8px 0 0}
+.fb{margin:16px 0 0;padding:14px 16px;border-radius:12px;font-size:15.5px}
+.fb.ok{background:color-mix(in srgb, var(--good) 12%, var(--surface));border:1px solid var(--good)}
+.fb.no{background:color-mix(in srgb, var(--bad) 9%, var(--surface));border:1px solid var(--bad)}
+.fb b{display:block;margin-bottom:4px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:20px;flex-wrap:wrap}
+.score{display:flex;flex-wrap:wrap;align-items:center;gap:20px 34px;margin:10px 0 18px}
+.big{font:800 64px/1 var(--f-display);color:var(--pri);font-variant-numeric:tabular-nums}
+.big small{font-size:28px;color:var(--muted)}
+.grade{font:700 22px var(--f-display)}
+.sub{font-size:15px;color:var(--muted)}
+.bysect{display:grid;gap:8px;margin:4px 0 20px}
+.bysect div{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:15px}
+.bysect .pb{grid-column:1/-1;height:8px;border-radius:4px;background:var(--bg);overflow:hidden}
+.bysect .pb i{display:block;height:100%;background:var(--pri)}
+.save{padding:12px 14px;border-radius:12px;font-size:15px;margin:0 0 18px}
+.save.ok{background:color-mix(in srgb, var(--good) 12%, var(--surface));border:1px solid var(--good)}
+.save.info{background:var(--pri-soft);border:1px solid var(--pri)}
+.review{display:grid;gap:12px;margin-top:10px}
+.rv{border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:12px;padding:12px 14px;background:var(--surface)}
+.rv p{margin:0 0 6px}
+.rv .a{font-size:14px;color:var(--muted)}
+@media (prefers-reduced-motion: reduce){.prog i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="bar">
+    <a class="back" href="./">← Materiały</a>
+    <span class="who" id="who"></span>
+  </header>
+
+  <!-- start -->
+  <section id="vStart">
+    <p class="eyebrow">Fizyka · klasa 7 · quiz</p>
+    <h1>Jak mierzymy ciśnienie? Ciśnienie hydrostatyczne i atmosferyczne</h1>
+    <p class="lead">Sprawdź, co już wiesz. Pytania są jednokrotnego i wielokrotnego wyboru, są też zadania rachunkowe. Po każdej odpowiedzi zobaczysz wyjaśnienie.</p>
+    <div class="parts" id="parts"></div>
+    <div class="card">
+      <p style="margin:0 0 6px"><b id="nQ"></b>. W zadaniach rachunkowych przyjmij <b>g = 10 N/kg</b> i gęstość wody <b>1000 kg/m³</b>.</p>
+      <p style="margin:0;color:var(--muted);font-size:15px">Za każdą poprawną odpowiedź dostajesz 2 punkty. Liczy się najlepszy wynik, więc możesz poprawiać.</p>
+      <div class="row"><span class="who" id="saveInfo"></span><button class="btn main" id="startBtn">Zacznij quiz →</button></div>
+    </div>
+  </section>
+
+  <!-- pytanie -->
+  <section id="vQ" hidden>
+    <div class="top"><span id="qNum"></span><span id="qPts"></span></div>
+    <div class="prog"><i id="qBar"></i></div>
+    <div class="card">
+      <span class="sect" id="qSect"></span>
+      <h2 id="qText"></h2>
+      <div id="qBody"></div>
+      <div id="qFb" aria-live="polite"></div>
+      <div class="row">
+        <span class="hint" id="qHint"></span>
+        <button class="btn main" id="qBtn" disabled>Sprawdź</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- wynik -->
+  <section id="vEnd" hidden>
+    <p class="eyebrow">Wynik quizu</p>
+    <h1 id="endTitle"></h1>
+    <div class="score">
+      <div class="big" id="endScore"></div>
+      <div><div class="grade" id="endGrade"></div><div class="sub" id="endPct"></div></div>
+    </div>
+    <div class="save" id="endSave" hidden></div>
+    <div class="bysect" id="endSect"></div>
+    <div class="row" style="margin:0 0 26px;justify-content:flex-start">
+      <button class="btn main" id="againBtn">Spróbuj jeszcze raz</button>
+      <a class="btn" href="./">Wróć do materiałów</a>
+      <a class="btn" href="https://mateuszl28.github.io/cisnienie-prezentacja/">Powtórz z prezentacją</a>
+    </div>
+    <h2 id="revH">Do powtórki</h2>
+    <div class="review" id="review"></div>
+  </section>
+</div>
+
+<script type="module">
+const $ = id => document.getElementById(id);
+const nf = (x, d = 2) => x.toLocaleString('pl-PL', {maximumFractionDigits:d});
+const R = (a, b, s = 1) => Math.round((a + Math.random()*(b - a))/s)*s;
+const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+const KLUCZ = 'quiz7';
+const DZIALY = ['Jak mierzymy ciśnienie', 'Ciśnienie hydrostatyczne', 'Ciśnienie atmosferyczne'];
+
+/* typy: one (jedna odpowiedź), multi (kilka), tf (prawda/fałsz), num (liczba). Odpowiedź poprawna: indeks 0 przed tasowaniem. */
+const PYTANIA = () => [
+  {d:0, t:'one', q:'Jakim przyrządem mierzymy ciśnienie atmosferyczne?', o:['barometrem', 'manometrem', 'termometrem', 'siłomierzem'], e:'Ciśnienie atmosferyczne mierzy barometr, np. rtęciowy albo aneroidowy.'},
+  {d:0, t:'one', q:'Jakim przyrządem sprawdzimy ciśnienie powietrza w oponie roweru?', o:['manometrem', 'barometrem', 'amperomierzem', 'higrometrem'], e:'Manometr mierzy ciśnienie gazu lub cieczy w zamkniętym zbiorniku, np. w oponie lub w butli.'},
+  {d:0, t:'one', q:'Jaka jest jednostka ciśnienia w układzie SI?', o:['paskal (Pa)', 'niuton (N)', 'kilogram (kg)', 'dżul (J)'], e:'1 Pa = 1 N/m². Często używamy też większych jednostek: hPa i kPa.'},
+  (() => { const v = R(980, 1040); return {d:0, t:'num', q:`Barometr pokazuje ${v} hPa. Ile to paskali?`, a:v*100, u:'Pa', h:'1 hPa = 100 Pa', e:`${v} hPa = ${v} · 100 Pa = ${nf(v*100, 0)} Pa.`}; })(),
+  {d:0, t:'one', q:'Na czym polega działanie barometru aneroidowego?', o:['metalowa puszka z rozrzedzonym powietrzem ugina się pod naciskiem atmosfery', 'słup rtęci w rurce opada i podnosi się', 'sprężyna jest ściskana ręką', 'ciecz w termometrze zmienia objętość'], e:'Aneroid to puszka, która ugina się, gdy zmienia się ciśnienie powietrza. Mechanizm przenosi to na wskazówkę.'},
+  {d:0, t:'one', q:'Jak manometr cieczowy (rurka w kształcie litery U) pokazuje ciśnienie?', o:['przez różnicę poziomów cieczy w ramionach rurki', 'przez zmianę koloru cieczy', 'przez zmianę temperatury cieczy', 'przez ilość cieczy w rurce'], e:'Im większe ciśnienie, tym bardziej poziomy cieczy w obu ramionach się rozsuwają.'},
+  {d:0, t:'tf', q:'Wysokościomierz w samolocie to barometr, który zamiast hektopaskali pokazuje metry.', a:true, e:'Prawda. Działa, bo ciśnienie atmosferyczne maleje z wysokością.'},
+
+  {d:1, t:'multi', q:'Od czego zależy ciśnienie hydrostatyczne? Zaznacz wszystkie poprawne odpowiedzi.', o:['od głębokości', 'od gęstości cieczy', 'od kształtu naczynia', 'od ilości cieczy w naczyniu'], ok:[0, 1], e:'p = ρ · g · h: liczy się gęstość cieczy i głębokość. Kształt naczynia i ilość cieczy nie mają znaczenia.'},
+  {d:1, t:'one', q:'Który wzór opisuje ciśnienie hydrostatyczne?', o:['p = ρ · g · h', 'p = F · S', 'p = m / V', 'p = ρ / (g · h)'], e:'ρ to gęstość cieczy, g ≈ 10 N/kg, h to głębokość pod powierzchnią.'},
+  (() => { const h = R(2, 15); return {d:1, t:'num', q:`Oblicz ciśnienie hydrostatyczne wody w basenie na głębokości ${h} m.`, a:10000*h, u:'Pa', h:'p = ρ · g · h, ρ = 1000 kg/m³, g = 10 N/kg', e:`p = 1000 · 10 · ${h} = ${nf(10000*h, 0)} Pa.`}; })(),
+  (() => { const k = R(20, 150, 10); return {d:1, t:'num', q:`Na jakiej głębokości w wodzie ciśnienie hydrostatyczne wynosi ${k} kPa?`, a:k/10, u:'m', h:'h = p / (ρ · g). Zamień kPa na Pa.', e:`h = ${nf(k*1000, 0)} Pa : (1000 · 10) = ${nf(k/10, 1)} m.`}; })(),
+  {d:1, t:'one', q:'Trzy naczynia o różnych kształtach napełniono wodą do tej samej wysokości. Gdzie ciśnienie na dnie jest największe?', o:['wszędzie jest takie samo', 'w najszerszym naczyniu', 'w najwęższym naczyniu', 'w naczyniu, w którym jest najwięcej wody'], e:'To paradoks hydrostatyczny: liczy się tylko wysokość słupa cieczy.'},
+  {d:1, t:'tf', q:'Ciśnienie w cieczy działa tylko w dół, na dno naczynia.', a:false, e:'Fałsz. Ciśnienie w cieczy działa we wszystkich kierunkach: na dno, na ściany i do góry (prawo Pascala).'},
+  {d:1, t:'one', q:'W plastikowej butelce z wodą zrobiono trzy otwory na różnych wysokościach. Z którego woda tryska najmocniej?', o:['z najniższego', 'z najwyższego', 'ze środkowego', 'ze wszystkich tak samo'], e:'Najniższy otwór jest najgłębiej, więc tam ciśnienie hydrostatyczne jest największe.'},
+  {d:1, t:'one', q:'Gdzie na głębokości 5 m ciśnienie hydrostatyczne jest większe?', o:['w wodzie morskiej (1025 kg/m³)', 'w wodzie słodkiej (1000 kg/m³)', 'w alkoholu (789 kg/m³)', 'wszędzie jest takie samo'], e:'Przy tej samej głębokości większe ciśnienie daje ciecz o większej gęstości.'},
+  (() => { const h = R(1, 4); return {d:1, t:'num', q:`Oblicz ciśnienie hydrostatyczne oliwy (ρ = 920 kg/m³) na głębokości ${h} m.`, a:9200*h, u:'Pa', h:'p = ρ · g · h', e:`p = 920 · 10 · ${h} = ${nf(9200*h, 0)} Pa.`}; })(),
+
+  {d:2, t:'one', q:'Skąd się bierze ciśnienie atmosferyczne?', o:['z ciężaru powietrza otaczającego Ziemię', 'z obrotu Ziemi wokół osi', 'z ciepła Słońca', 'z wiatru'], e:'Nad każdym z nas jest słup powietrza wysoki na wiele kilometrów. Jego ciężar wywiera ciśnienie.'},
+  {d:2, t:'one', q:'Ile wynosi ciśnienie normalne na poziomie morza?', o:['1013,25 hPa', '1013,25 Pa', '101,3 hPa', '10 hPa'], e:'1013,25 hPa = 101 325 Pa = 760 mm Hg = 1 atm.'},
+  {d:2, t:'one', q:'Jak zmienia się ciśnienie atmosferyczne, gdy wjeżdżamy wysoko w góry?', o:['maleje', 'rośnie', 'nie zmienia się', 'najpierw rośnie, potem maleje'], e:'Im wyżej, tym mniej powietrza nad nami, więc ciśnienie maleje.'},
+  {d:2, t:'one', q:'Co pokazało doświadczenie Torricellego?', o:['że powietrze ma ciężar i równoważy słup rtęci o wysokości ok. 760 mm', 'że woda wrze w 100 °C', 'że rtęć jest lżejsza od wody', 'że w próżni dźwięk się nie rozchodzi'], e:'Słup rtęci w odwróconej rurce opadł do ok. 760 mm. Utrzymuje go ciśnienie atmosferyczne.'},
+  {d:2, t:'one', q:'Dlaczego napój wpływa do słomki, gdy z niej pijemy?', o:['zmniejszamy ciśnienie w słomce, a ciśnienie atmosferyczne wpycha napój', 'słomka przyciąga napój', 'napój jest lżejszy od powietrza', 'ciśnienie w słomce rośnie'], e:'Wciągając powietrze, robimy w słomce podciśnienie. Napój wpycha powietrze naciskające na jego powierzchnię w szklance.'},
+  {d:2, t:'tf', q:'W wysokich górach woda wrze w temperaturze wyższej niż 100 °C.', a:false, e:'Fałsz. Ciśnienie jest tam niższe, więc woda wrze w niższej temperaturze, np. na Rysach w ok. 91 °C.'},
+  {d:2, t:'one', q:'Co pokazało doświadczenie z półkulami magdeburskimi?', o:['jak dużą siłą naciska powietrze z zewnątrz', 'że metal przewodzi ciepło', 'że konie są silniejsze niż powietrze', 'że próżnia przyciąga przedmioty'], e:'Gdy wypompowano powietrze ze środka, atmosfera ściskała półkule tak mocno, że zaprzęgi koni nie mogły ich rozerwać.'},
+  (() => { const S = R(0.02, 0.1, 0.01); return {d:2, t:'num', q:`Z jaką siłą powietrze (p = 100 000 Pa) naciska na zeszyt o powierzchni ${nf(S)} m²?`, a:100000*S, u:'N', h:'F = p · S', e:`F = 100 000 Pa · ${nf(S)} m² = ${nf(100000*S, 0)} N.`}; })()
+];
+
+/* ---------- konto (zapis wyniku) ---------- */
+let K = null, uczen = null;
+try {
+  K = await import('./konto.js?v=3');
+  K.naZmianeKonta(p => {
+    uczen = p && p.role === 'student' ? p : null;
+    $('who').innerHTML = uczen ? `Zalogowany: <b>${uczen.name || uczen.login}</b>` : p && p.role === 'teacher' ? 'Konto nauczyciela' : '';
+    $('saveInfo').textContent = uczen ? 'Twój wynik zostanie zapisany i doliczony do punktów.' : 'Zaloguj się na stronie głównej, żeby zapisać wynik i dostać punkty.';
+  }).catch(() => {});
+} catch(e) { $('saveInfo').textContent = ''; }
+
+/* ---------- przebieg quizu ---------- */
+let qs = [], i = 0, wyniki = [];
+function przygotuj(){
+  qs = PYTANIA().map(q => {
+    if (q.t === 'one' || q.t === 'multi') { const idx = shuffle(q.o.map((_, k) => k)); return {...q, opts:idx.map(k => q.o[k]), good:q.t === 'one' ? [idx.indexOf(0)] : q.ok.map(k => idx.indexOf(k))}; }
+    if (q.t === 'tf') return {...q, opts:['Prawda', 'Fałsz'], good:[q.a ? 0 : 1]};
+    return q;
+  });
+  i = 0; wyniki = [];
+}
+const parts = DZIALY.map((n, d) => { const c = PYTANIA().filter(q => q.d === d).length; return `<div class="part"><b>${n}</b><span>${c} pytań</span></div>`; });
+$('parts').innerHTML = parts.join(''); $('nQ').textContent = PYTANIA().length + ' pytań';
+
+let wybor = new Set();
+function pokazPytanie(){
+  const q = qs[i]; wybor = new Set();
+  $('qNum').textContent = `Pytanie ${i + 1} z ${qs.length}`;
+  $('qPts').textContent = `poprawne: ${wyniki.filter(w => w.ok).length}`;
+  $('qBar').style.width = (i/qs.length*100) + '%';
+  $('qSect').textContent = DZIALY[q.d]; $('qText').textContent = q.q; $('qFb').innerHTML = '';
+  $('qBtn').textContent = 'Sprawdź'; $('qBtn').disabled = true; $('qBtn').dataset.mode = 'check';
+  $('qHint').textContent = q.t === 'multi' ? 'Zaznacz wszystkie poprawne odpowiedzi.' : q.t === 'num' ? 'Wpisz liczbę. Możesz użyć przecinka.' : '';
+  if (q.t === 'num') {
+    $('qBody').innerHTML = `<div class="num"><label for="ans" style="position:absolute;left:-9999px">Odpowiedź</label><input id="ans" inputmode="decimal" autocomplete="off" placeholder="wynik"><span class="u">${q.u}</span></div><p class="hint">Podpowiedź: ${q.h}</p>`;
+    const inp = $('ans'); inp.focus();
+    inp.oninput = () => $('qBtn').disabled = !inp.value.trim();
+    inp.onkeydown = e => { if (e.key === 'Enter' && !$('qBtn').disabled) $('qBtn').click(); };
+  } else {
+    $('qBody').innerHTML = `<div class="opts">${q.opts.map((o, k) => `<button class="opt" data-k="${k}" aria-pressed="false"><span class="k">${q.t === 'tf' ? (k ? 'F' : 'P') : 'ABCD'[k]}</span><span>${o}</span></button>`).join('')}</div>`;
+    $('qBody').querySelectorAll('.opt').forEach(b => b.onclick = () => {
+      const k = +b.dataset.k;
+      if (q.t === 'multi') { wybor.has(k) ? wybor.delete(k) : wybor.add(k); }
+      else wybor = new Set([k]);
+      $('qBody').querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', wybor.has(+x.dataset.k)));
+      $('qBtn').disabled = !wybor.size;
+    });
+  }
+}
+function sprawdz(){
+  const q = qs[i]; let ok, twoja;
+  if (q.t === 'num') {
+    const v = parseFloat($('ans').value.replace(/\s/g, '').replace(',', '.'));
+    ok = !isNaN(v) && Math.abs(v - q.a) <= Math.max(0.01*Math.abs(q.a), 0.01);
+    twoja = isNaN(v) ? $('ans').value : nf(v, 3) + ' ' + q.u; $('ans').disabled = true;
+  } else {
+    ok = wybor.size === q.good.length && q.good.every(g => wybor.has(g));
+    twoja = [...wybor].map(k => q.opts[k]).join(', ');
+    $('qBody').querySelectorAll('.opt').forEach(b => { const k = +b.dataset.k; b.disabled = true; if (q.good.includes(k)) b.classList.add('ok'); else if (wybor.has(k)) b.classList.add('no'); });
+  }
+  const dobra = q.t === 'num' ? nf(q.a, 3) + ' ' + q.u : q.good.map(k => q.opts[k]).join(', ');
+  wyniki.push({ok, d:q.d, q:q.q, twoja, dobra, e:q.e});
+  $('qFb').innerHTML = `<div class="fb ${ok ? 'ok' : 'no'}"><b>${ok ? 'Dobrze!' : 'Niestety nie.'}</b>${ok ? '' : `Poprawna odpowiedź: <b style="display:inline">${dobra}</b>. `}${q.e}</div>`;
+  $('qBtn').textContent = i + 1 < qs.length ? 'Następne pytanie →' : 'Zobacz wynik →'; $('qBtn').dataset.mode = 'next'; $('qBtn').disabled = false; $('qBtn').focus();
+}
+$('qBtn').onclick = () => { if ($('qBtn').dataset.mode === 'check') sprawdz(); else { i++; i < qs.length ? pokazPytanie() : koniec(); } };
+
+const ocena = p => p === 100 ? 'celujący' : p >= 90 ? 'bardzo dobry' : p >= 75 ? 'dobry' : p >= 50 ? 'dostateczny' : p >= 30 ? 'dopuszczający' : 'niedostateczny';
+async function koniec(){
+  const n = qs.length, s = wyniki.filter(w => w.ok).length, pct = Math.round(s/n*100);
+  $('vQ').hidden = true; $('vEnd').hidden = false; window.scrollTo(0, 0);
+  $('endTitle').textContent = pct >= 90 ? 'Świetnie! Znasz ten temat.' : pct >= 50 ? 'Dobra robota!' : 'Warto jeszcze powtórzyć.';
+  $('endScore').innerHTML = `${s}<small> / ${n}</small>`;
+  $('endGrade').textContent = 'Ocena orientacyjna: ' + ocena(pct);
+  $('endPct').textContent = `${pct}% poprawnych odpowiedzi · ${s*2} pkt`;
+  $('endSect').innerHTML = DZIALY.map((nz, d) => { const w = wyniki.filter(x => x.d === d), ok = w.filter(x => x.ok).length; return `<div><span>${nz}</span><b>${ok} / ${w.length}</b><span class="pb"><i style="width:${w.length ? ok/w.length*100 : 0}%"></i></span></div>`; }).join('');
+  const zle = wyniki.filter(w => !w.ok);
+  $('revH').hidden = !zle.length;
+  $('review').innerHTML = zle.map(w => `<div class="rv"><p><b>${w.q}</b></p><p class="a">Twoja odpowiedź: ${w.twoja || '—'}<br>Poprawna: <b>${w.dobra}</b></p><p class="a">${w.e}</p></div>`).join('');
+  const box = $('endSave'); box.hidden = false;
+  if (uczen && K) {
+    box.className = 'save info'; box.textContent = 'Zapisuję wynik…';
+    try { await K.zapisz(KLUCZ, {type:'quiz', score:s, answered:n, total:n}); box.className = 'save ok'; box.textContent = 'Wynik zapisany. Najlepszy wynik liczy się do twoich punktów.'; }
+    catch(e) { box.className = 'save info'; box.textContent = 'Nie udało się zapisać wyniku. Sprawdź internet i rozwiąż quiz jeszcze raz.'; }
+  } else { box.className = 'save info'; box.innerHTML = 'Wynik nie został zapisany, bo nie jesteś zalogowany. <a href="./#konto">Zaloguj się</a> i rozwiąż quiz jeszcze raz, żeby dostać punkty.'; }
+}
+const start = () => { przygotuj(); $('vStart').hidden = true; $('vEnd').hidden = true; $('vQ').hidden = false; pokazPytanie(); window.scrollTo(0, 0); };
+$('startBtn').onclick = start; $('againBtn').onclick = start;
+</script>
+</body>
+</html>

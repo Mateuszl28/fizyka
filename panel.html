@@ -254,7 +254,7 @@ dialog::backdrop{background:rgba(11,16,32,.45)}
 import * as K from './konto.js?v=3';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
-const DECKS = [{k:'cisnienie', n:'Ciśnienie (kl. 7)', w:52, q:18, c:'k7'}, {k:'prad', n:'Prąd (kl. 8)', w:31, q:18, c:'k8'}];
+const DECKS = [{k:'cisnienie', n:'Ciśnienie (kl. 7)', w:52, q:18, c:'k7'}, {k:'quiz7', n:'Quiz: ciśnienie (kl. 7)', w:0, q:24, c:'k7'}, {k:'prad', n:'Prąd (kl. 8)', w:31, q:18, c:'k8'}];
 const show = v => ['off', 'viewAuth', 'viewStudent', 'viewPanel'].forEach(id => $(id).hidden = id !== v);
 let klasy = [], wybrana = 'ALL', wszyscy = [], ostatnie = [];
 const nazwa = s => s.name || s.login;
@@ -329,7 +329,7 @@ function rysujKlase(){
   $('sum').innerHTML = `<div><b>${n}</b><span>uczniów</span></div><div><b>${t}</b><span>punktów razem</span></div><div><b>${n ? Math.round(t/n) : 0}</b><span>średnio na ucznia</span></div><div><b>${akt}</b><span>aktywnych w tym tygodniu</span></div>`;
   if (!n) { $('tbl').innerHTML = '<tbody><tr><td class="empty">W tej klasie nie ma jeszcze uczniów.<br><button class="btn pri" id="addBtn2">+ Dodaj uczniów</button></td></tr></tbody>'; $('addBtn2').onclick = otworzDodawanie; return; }
   $('tbl').innerHTML = `<thead><tr><th class="n">#</th><th>Uczeń</th><th class="n">Punkty</th>${DECKS.map(D => `<th class="n ${D.c}">${D.n}</th><th class="det">Wyzwania</th><th class="det">Quiz</th><th class="det n">Trening</th><th class="det">Krzyżówka</th>`).join('')}<th>Ostatnio</th><th></th></tr></thead><tbody>` +
-    u.map((s, i) => `<tr><td class="n">${i + 1}.</td><td class="who"><b>${esc(nazwa(s))}</b><small>login: ${esc(s.login)}</small></td><td class="n"><span class="pts">${s._pk.total}</span></td>${kolumny(s).map(r => `<td class="n">${r.p}</td><td class="det"><span class="bar-s"><i style="width:${Math.round(r.w/r.wt*100)}%"></i></span>${r.w}/${r.wt}</td><td class="det">${r.quiz}</td><td class="det n">${r.tren}</td><td class="det">${r.krz}</td>`).join('')}<td class="muted">${kiedy(data(s.updatedAt))}</td><td><div class="acts"><button class="btn sm" data-pw="${esc(s.uid)}">Nowe hasło</button><button class="btn sm danger" data-del="${esc(s.uid)}">Usuń</button></div></td></tr>`).join('') + '</tbody>';
+    u.map((s, i) => `<tr><td class="n">${i + 1}.</td><td class="who"><b>${esc(nazwa(s))}</b><small>login: ${esc(s.login)}</small></td><td class="n"><span class="pts">${s._pk.total}</span></td>${kolumny(s).map(r => `<td class="n">${r.p}</td><td class="det">${r.wt ? `<span class="bar-s"><i style="width:${Math.round(r.w/r.wt*100)}%"></i></span>${r.w}/${r.wt}` : '—'}</td><td class="det">${r.quiz}</td><td class="det n">${r.tren}</td><td class="det">${r.krz}</td>`).join('')}<td class="muted">${kiedy(data(s.updatedAt))}</td><td><div class="acts"><button class="btn sm" data-pw="${esc(s.uid)}">Nowe hasło</button><button class="btn sm danger" data-del="${esc(s.uid)}">Usuń</button></div></td></tr>`).join('') + '</tbody>';
   $('tbl').querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
     if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Na pewno?'; setTimeout(() => { b.dataset.sure = ''; b.textContent = 'Usuń'; }, 4000); return; }
     const s = wszyscy.find(x => x.uid === b.dataset.del); b.disabled = true;
