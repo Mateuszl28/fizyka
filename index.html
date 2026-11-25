@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fizyka: materiały dla uczniów</title>
+<meta name="description" content="Interaktywne prezentacje z fizyki dla szkoły podstawowej: symulacje, quizy, zadania i krzyżówki.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232E5BD8'/%3E%3Cpath d='M18 4 9 18h6l-2 10 10-15h-6z' fill='%23FFD35A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Układ: nagłówek z hasłem, filtr klas, siatka kart materiałów, wskazówki, stopka */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+:root{
+  --bg:#EEF1F6; --surface:#FFFFFF; --ink:#101B33; --muted:#56607A; --line:#CAD2E1;
+  --pri:#2E5BD8; --pri-soft:rgba(46,91,216,.12); --acc:#D9951A; --water:#2C7BB6; --glow:#FFD35A;
+  --k7:#2C7BB6; --k8:#7B5BD0;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1020; --surface:#141B2F; --ink:#E5EAF5; --muted:#98A3BC; --line:#2A3450;
+  --pri:#6E95FF; --pri-soft:rgba(110,149,255,.16); --acc:#F2B940; --water:#58A8E0; --glow:#FFD96A;
+  --k7:#58A8E0; --k8:#A98BF0; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0B1020; --surface:#141B2F; --ink:#E5EAF5; --muted:#98A3BC; --line:#2A3450;
+  --pri:#6E95FF; --pri-soft:rgba(110,149,255,.16); --acc:#F2B940; --water:#58A8E0; --glow:#FFD96A;
+  --k7:#58A8E0; --k8:#A98BF0; color-scheme:dark }
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(18px, env(safe-area-inset-left, 0px));padding-right:max(18px, env(safe-area-inset-right, 0px))}
+a{color:var(--pri)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+/* pasek */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:18px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:18px;color:var(--ink);text-decoration:none}
+.logo svg{width:34px;height:34px}
+.bar nav{display:flex;gap:18px;font-size:14px;font-weight:600}
+.bar nav a{color:var(--muted);text-decoration:none}
+.bar nav a:hover{color:var(--ink)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:40px;align-items:center;padding-block:36px 48px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);margin:0 0 12px}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(40px,6.4vw,74px);line-height:1.02;letter-spacing:-.025em;margin:0 0 18px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--pri)}
+.lead{font-size:19px;color:var(--muted);max-width:52ch;margin:0 0 24px}
+.stats{display:flex;flex-wrap:wrap;gap:10px 28px}
+.stats div{display:flex;flex-direction:column}
+.stats b{font-family:var(--f-display);font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stats span{font-size:13px;color:var(--muted)}
+.board{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;min-width:0}
+.board svg{width:100%;height:auto;display:block}
+.board .cap{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin:8px 0 0;text-align:center}
+
+/* filtr */
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin:8px 0 18px}
+h2{font-family:var(--f-display);font-size:clamp(26px,3.4vw,38px);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{font:600 14px var(--f-body);padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.search{font:500 15px var(--f-body);padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);width:220px;max-width:100%}
+
+/* karty materiałów */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:20px}
+.card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;min-width:0;transition:transform .2s ease, box-shadow .2s ease}
+.card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(16,27,51,.10)}
+@media (prefers-reduced-motion: reduce){.card{transition:none}.card:hover{transform:none}}
+.art{position:relative;aspect-ratio:16/8;background:var(--tint);overflow:hidden}
+.art svg{position:absolute;inset:0;width:100%;height:100%}
+.badge{position:absolute;top:14px;left:14px;font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:var(--surface);color:var(--klass)}
+.body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px;flex:1}
+.body h3{font-family:var(--f-display);font-size:24px;line-height:1.15;margin:0;text-wrap:balance}
+.body p{margin:0;color:var(--muted);font-size:15px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:0}
+.tags li{font-size:12.5px;padding:3px 9px;border-radius:6px;background:var(--bg);color:var(--ink)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;font:500 13px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
+.btn{display:inline-flex;align-items:center;gap:8px;font:600 15px var(--f-body);padding:11px 18px;border-radius:10px;text-decoration:none;border:1px solid var(--line);color:var(--ink);background:var(--surface)}
+.btn.main{background:var(--klass);border-color:var(--klass);color:#fff}
+.btn:hover{border-color:var(--klass)}
+.quick{display:flex;flex-wrap:wrap;gap:6px}
+.quick a{font:500 13px var(--f-body);padding:6px 10px;border-radius:8px;background:var(--bg);color:var(--ink);text-decoration:none;border:1px solid transparent}
+.quick a:hover{border-color:var(--klass)}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px 0}
+.soon{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:8px;border:2px dashed var(--line);border-radius:18px;padding:24px;color:var(--muted);min-height:200px}
+.soon b{font-family:var(--f-display);font-size:20px;color:var(--ink)}
+
+/* jak korzystać */
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:20px}
+.tip{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.tip .ic{width:40px;height:40px;border-radius:10px;background:var(--pri-soft);display:grid;place-items:center;margin-bottom:10px;color:var(--pri);font:600 16px var(--f-mono)}
+.tip h4{font-family:var(--f-display);font-size:17px;margin:0 0 4px}
+.tip p{margin:0;font-size:14px;color:var(--muted)}
+kbd{font:500 12px var(--f-mono);padding:2px 6px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;background:var(--bg);color:var(--ink)}
+section{padding-block:30px}
+footer{margin-top:30px;border-top:1px solid var(--line);padding-block:24px 36px;color:var(--muted);font-size:14px;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+@media (max-width:860px){
+  .hero{grid-template-columns:minmax(0,1fr);gap:24px;padding-block:16px 28px}
+  .bar nav{display:none}
+  .grid{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="bar">
+    <a class="logo" href="#">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--pri)"/><path d="M18 4 9 18h6l-2 10 10-15h-6z" fill="var(--glow)"/></svg>
+      Fizyka
+    </a>
+    <nav aria-label="Na stronie">
+      <a href="#materialy">Materiały</a>
+      <a href="#jak">Jak korzystać</a>
+    </nav>
+  </header>
+
+  <section class="hero" aria-labelledby="tytul">
+    <div>
+      <p class="eyebrow">Szkoła podstawowa · materiały dla uczniów</p>
+      <h1 id="tytul">Fizyka, którą można <em>kliknąć</em></h1>
+      <p class="lead">Interaktywne prezentacje do lekcji i do nauki w domu. Każdy slajd sam pokazuje doświadczenie, a potem możesz nim sterować. Są też quizy, zadania z rozwiązaniami i krzyżówki.</p>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="board" aria-hidden="true">
+      <svg viewBox="0 0 400 240" id="heroArt"></svg>
+      <p class="cap">ciśnienie rośnie z głębokością · prąd płynie w zamkniętym obwodzie</p>
+    </div>
+  </section>
+
+  <section id="materialy" aria-labelledby="mat-h">
+    <div class="toolbar">
+      <h2 id="mat-h">Materiały</h2>
+      <div class="filters">
+        <div class="filters" id="klasy" role="group" aria-label="Filtruj według klasy"></div>
+        <label for="q" class="sr" style="position:absolute;left:-9999px">Szukaj tematu</label>
+        <input id="q" class="search" type="search" placeholder="Szukaj tematu…" autocomplete="off">
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="jak" aria-labelledby="jak-h">
+    <h2 id="jak-h">Jak korzystać z prezentacji</h2>
+    <div class="how">
+      <div class="tip"><div class="ic">← →</div><h4>Przełączanie slajdów</h4><p>Używaj strzałek <kbd>←</kbd> <kbd>→</kbd> na klawiaturze albo przycisków „Wstecz” i „Dalej”.</p></div>
+      <div class="tip"><div class="ic">▶</div><h4>Pokaz automatyczny</h4><p>Każdy slajd sam odtwarza doświadczenie z opisem. Dotknij dowolnego elementu, żeby przejąć sterowanie.</p></div>
+      <div class="tip"><div class="ic">F11</div><h4>Pełny ekran</h4><p>Na komputerze naciśnij <kbd>F11</kbd>, żeby prezentacja zajęła cały ekran, np. na tablicy.</p></div>
+      <div class="tip"><div class="ic">★</div><h4>Wyzwania</h4><p>Na wielu slajdach są zadania do wykonania. Licznik gwiazdek w rogu pokazuje, ile już zaliczyłeś.</p></div>
+      <div class="tip"><div class="ic">www</div><h4>Telefon i tablet</h4><p>Prezentacje działają w każdej przeglądarce, bez logowania i bez instalowania czegokolwiek.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Materiały do lekcji fizyki w szkole podstawowej.</span>
+    <span id="upd"></span>
+  </footer>
+</div>
+
+<script>
+(function(){
+/*
+  Jak dodać nowy materiał: dopisz obiekt do tablicy MATERIALY.
+  klasa: numer klasy, url: adres prezentacji, art: 'cisnienie' | 'prad' | 'inne'.
+*/
+const MATERIALY = [
+  {
+    tytul:'Ciśnienie hydrostatyczne i atmosferyczne', klasa:7, art:'cisnienie', kolor:'--k7',
+    url:'https://mateuszl28.github.io/cisnienie-prezentacja/',
+    opis:'Dlaczego na dnie basenu bolą uszy, a w Tatrach woda wrze poniżej 100 °C? Od p = F/S, przez prawo Pascala i Archimedesa, po barometr i półkule magdeburskie.',
+    tematy:['p = F/S', 'p = ρgh', 'prawo Pascala', 'naczynia połączone', 'siła wyporu', 'barometr', 'Torricelli', 'wiatr'],
+    slajdy:46, pytania:18, wyzwania:52, data:'2026-11-25'
+  },
+  {
+    tytul:'Napięcie i natężenie prądu elektrycznego', klasa:8, art:'prad', kolor:'--k8',
+    url:'https://mateuszl28.github.io/prad-prezentacja/',
+    opis:'Co płynie w przewodach, gdy zapalasz światło? Obwody, amperomierz i woltomierz, prawo Ohma, połączenia szeregowe i równoległe, moc prądu i bezpieczeństwo.',
+    tematy:['I = q/t', 'U = W/q', 'prawo Ohma', 'opór', 'szeregowo i równolegle', 'moc i kWh', 'bezpiecznik', 'bezpieczeństwo'],
+    slajdy:34, pytania:18, wyzwania:31, data:'2026-11-25'
+  }
+];
+const SKROTY = [['Quiz', 'quiz'], ['Zadania', 'zadania'], ['Krzyżówka', 'krzyzowka'], ['Słowniczek', 'slowniczek'], ['Podsumowanie', 'podsumowanie']];
+
+const $ = id => document.getElementById(id);
+const sum = k => MATERIALY.reduce((a, m) => a + (m[k] || 0), 0);
+$('stats').innerHTML = [[MATERIALY.length, MATERIALY.length === 1 ? 'prezentacja' : 'prezentacje'], [sum('slajdy'), 'slajdów'], [sum('pytania'), 'pytań w quizach'], [sum('wyzwania'), 'wyzwań']].map(([n, t]) => `<div><b>${n}</b><span>${t}</span></div>`).join('');
+const last = MATERIALY.map(m => m.data).sort().pop();
+$('upd').textContent = 'Ostatnia aktualizacja: ' + new Date(last).toLocaleDateString('pl-PL', {day:'numeric', month:'long', year:'numeric'});
+
+/* ilustracje kart */
+const ART = {
+  cisnienie: `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="400" height="200" fill="var(--k7)" opacity=".14"/>
+    <rect x="0" y="70" width="400" height="130" fill="var(--k7)" opacity=".28"/>
+    <path d="M0 70 Q50 60 100 70 T200 70 T300 70 T400 70" fill="none" stroke="var(--k7)" stroke-width="3"/>
+    <g fill="none" stroke="var(--k7)" stroke-width="2" opacity=".8"><circle cx="300" cy="150" r="10"/><circle cx="312" cy="118" r="7"/><circle cx="305" cy="92" r="5"/></g>
+    <g stroke="var(--acc)" stroke-width="3" stroke-linecap="round"><path d="M130 100 v14 M120 140 v24 M110 180 v14"/></g>
+    <g fill="var(--acc)"><path d="M124 114 l6 8 6-8z"/><path d="M114 164 l6 8 6-8z"/></g>
+    <circle cx="330" cy="38" r="22" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/><path d="M330 38 L342 28" stroke="var(--acc)" stroke-width="3" stroke-linecap="round"/><circle cx="330" cy="38" r="3" fill="var(--ink)"/>
+  </svg>`,
+  prad: `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="400" height="200" fill="var(--k8)" opacity=".14"/>
+    <path d="M60 50 H340 V160 H60 Z" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="44" y="92" width="32" height="26" fill="var(--surface)"/><path d="M46 98 h28" stroke="var(--ink)" stroke-width="3"/><path d="M53 110 h14" stroke="var(--ink)" stroke-width="7"/>
+    <circle cx="340" cy="105" r="34" fill="var(--glow)" opacity=".35"/><circle cx="340" cy="105" r="18" fill="var(--glow)" stroke="var(--ink)" stroke-width="2.5"/><path d="M328 93 L352 117 M352 93 L328 117" stroke="var(--ink)" stroke-width="2"/>
+    <g fill="var(--k8)"><circle cx="110" cy="50" r="5"/><circle cx="170" cy="50" r="5"/><circle cx="230" cy="50" r="5"/><circle cx="290" cy="50" r="5"/><circle cx="120" cy="160" r="5"/><circle cx="190" cy="160" r="5"/><circle cx="260" cy="160" r="5"/></g>
+    <path d="M200 70 l-14 24 h12 l-6 26 22-32 h-12 l8-18z" fill="var(--acc)"/>
+  </svg>`,
+  inne: `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="400" height="200" fill="var(--pri)" opacity=".12"/></svg>`
+};
+
+/* filtry */
+const klasy = [...new Set(MATERIALY.map(m => m.klasa))].sort();
+let wybrana = 'all', fraza = '';
+const box = $('klasy');
+[['all', 'Wszystkie'], ...klasy.map(k => [String(k), 'Klasa ' + k])].forEach(([v, t], i) => {
+  const b = document.createElement('button'); b.className = 'chip'; b.textContent = t; b.dataset.v = v; b.setAttribute('aria-pressed', i ? 'false' : 'true');
+  b.onclick = () => { wybrana = v; [...box.children].forEach(c => c.setAttribute('aria-pressed', c === b ? 'true' : 'false')); render(); };
+  box.appendChild(b);
+});
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l');
+$('q').addEventListener('input', e => { fraza = norm(e.target.value.trim()); render(); });
+
+function render(){
+  const lista = MATERIALY.filter(m => (wybrana === 'all' || String(m.klasa) === wybrana) && (!fraza || norm([m.tytul, m.opis, ...m.tematy, 'klasa ' + m.klasa].join(' ')).includes(fraza)));
+  const g = $('grid');
+  g.innerHTML = lista.map(m => `
+    <article class="card" style="--klass:var(${m.kolor});--tint:color-mix(in srgb, var(${m.kolor}) 10%, var(--surface))">
+      <div class="art">${ART[m.art] || ART.inne}<span class="badge">Klasa ${m.klasa}</span></div>
+      <div class="body">
+        <h3>${m.tytul}</h3>
+        <p>${m.opis}</p>
+        <ul class="tags">${m.tematy.map(t => `<li>${t}</li>`).join('')}</ul>
+        <div class="meta"><span>${m.slajdy} slajdów</span><span>${m.pytania} pytań</span><span>${m.wyzwania} wyzwań</span></div>
+        <div class="actions"><a class="btn main" href="${m.url}">Otwórz prezentację →</a></div>
+        <div class="quick" aria-label="Szybkie linki">${SKROTY.map(([t, h]) => `<a href="${m.url}#${h}">${t}</a>`).join('')}</div>
+      </div>
+    </article>`).join('') + (wybrana === 'all' && !fraza ? `<div class="soon"><b>Kolejne tematy wkrótce</b><span>Nowe materiały pojawią się tutaj w miarę omawiania działów na lekcjach.</span></div>` : '');
+  if (!lista.length) g.innerHTML = '<p class="empty">Nie znaleziono materiałów. Spróbuj innego słowa albo wybierz „Wszystkie”.</p>';
+}
+render();
+
+/* ilustracja w nagłówku: zbiornik z wodą i obwód z płynącymi elektronami */
+const NS = 'http://www.w3.org/2000/svg', svg = $('heroArt');
+const el = (t, a, p) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); (p || svg).appendChild(e); return e; };
+el('rect', {x:20, y:30, width:150, height:180, rx:4, fill:'var(--water)', opacity:.18});
+el('rect', {x:20, y:60, width:150, height:150, fill:'var(--water)', opacity:.35});
+el('path', {d:'M20 20 V210 H170 V20', fill:'none', stroke:'var(--muted)', 'stroke-width':3});
+const arrows = [90, 125, 160, 195].map((y, i) => el('line', {x1:95, y1:y, x2:95 + 10 + i*9, y2:y, stroke:'var(--acc)', 'stroke-width':3, 'stroke-linecap':'round'}));
+const bubbles = [0, 1, 2].map(i => el('circle', {cx:60 + i*30, cy:200, r:3 + i, fill:'none', stroke:'var(--water)', 'stroke-width':2}));
+el('path', {d:'M220 50 H370 V200 H220 Z', fill:'none', stroke:'var(--ink)', 'stroke-width':3, 'stroke-linejoin':'round'});
+el('rect', {x:206, y:112, width:28, height:26, fill:'var(--surface)'});
+el('line', {x1:208, x2:232, y1:118, y2:118, stroke:'var(--ink)', 'stroke-width':3});
+el('line', {x1:214, x2:226, y1:130, y2:130, stroke:'var(--ink)', 'stroke-width':7});
+const glow = el('circle', {cx:370, cy:125, r:30, fill:'var(--glow)', opacity:.3});
+el('circle', {cx:370, cy:125, r:16, fill:'var(--glow)', stroke:'var(--ink)', 'stroke-width':2.5});
+el('path', {d:'M359 114 L381 136 M381 114 L359 136', stroke:'var(--ink)', 'stroke-width':2});
+const pts = [[220, 125], [220, 50], [370, 50], [370, 200], [220, 200], [220, 125]];
+const segs = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const l = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segs.push([pts[i], pts[i + 1], L, l]); L += l; }
+const at = t => { let d = ((t % 1) + 1) % 1*L; for (const [a, b, s, l] of segs) if (d <= s + l) { const f = (d - s)/l; return [a[0] + (b[0] - a[0])*f, a[1] + (b[1] - a[1])*f]; } return pts[0]; };
+const dots = Array.from({length:14}, () => el('circle', {r:3.6, fill:'var(--pri)'}));
+const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+let t = 0, prev = performance.now();
+function frame(now){
+  const dt = Math.min(.05, (now - prev)/1000); prev = now; if (!still) t += dt;
+  dots.forEach((d, k) => { const [x, y] = at(k/14 - t*0.08); d.setAttribute('cx', x); d.setAttribute('cy', y); });
+  bubbles.forEach((b, i) => { const y = 200 - ((t*28 + i*45) % 140); b.setAttribute('cy', y); b.setAttribute('r', 2 + (200 - y)/40 + i); });
+  glow.setAttribute('r', 28 + Math.sin(t*3)*3);
+  if (!still) requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
