@@ -100,6 +100,35 @@ h2{font-family:var(--f-display);font-size:clamp(26px,3.4vw,38px);margin:0;letter
 kbd{font:500 12px var(--f-mono);padding:2px 6px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;background:var(--bg);color:var(--ink)}
 section{padding-block:30px}
 footer{margin-top:30px;border-top:1px solid var(--line);padding-block:24px 36px;color:var(--muted);font-size:14px;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+/* konto */
+.acct{display:flex;align-items:center;gap:8px;font-size:14px}
+.acct .who{font-weight:600}
+.acct .who small{display:block;font:500 12px var(--f-mono);color:var(--muted)}
+.btn-s{font:600 14px var(--f-body);padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none}
+.btn-s.dark{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+dialog{border:1px solid var(--line);border-radius:18px;padding:0;background:var(--surface);color:var(--ink);width:min(440px, calc(100vw - 32px));box-shadow:0 24px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(11,16,32,.45)}
+.dlg-in{padding:22px 24px 24px;display:grid;gap:14px}
+.dlg-in h3{font-family:var(--f-display);font-size:24px;margin:0}
+.tabs{display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:999px}
+.tabs button{flex:1;font:600 14px var(--f-body);padding:8px;border-radius:999px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.fld{display:grid;gap:4px}
+.fld label{font-size:14px;font-weight:600}
+.fld input{font:500 16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.fld small{color:var(--muted);font-size:12.5px}
+.err{color:#C23B2C;font-size:14px;margin:0;min-height:1em}
+.ok-msg{color:#24865A;font-size:14px;margin:0}
+.x{position:absolute;top:12px;right:12px;border:0;background:transparent;font-size:22px;cursor:pointer;color:var(--muted)}
+.fine{font-size:12.5px;color:var(--muted);margin:0}
+/* postęp ucznia */
+.prog{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px;margin-top:16px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--klass);border-radius:14px;padding:16px 18px;display:grid;gap:10px}
+.pcard h4{font-family:var(--f-display);font-size:18px;margin:0}
+.pbar{height:10px;border-radius:5px;background:var(--bg);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--klass)}
+.prow{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.prow b{font-family:var(--f-mono);font-weight:500}
 @media (max-width:860px){
   .hero{grid-template-columns:minmax(0,1fr);gap:24px;padding-block:16px 28px}
   .bar nav{display:none}
@@ -118,7 +147,13 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-block:24px 36px;
       <a href="#materialy">Materiały</a>
       <a href="#jak">Jak korzystać</a>
     </nav>
+    <div class="acct" id="acct"><button class="btn-s dark" id="loginBtn">Zaloguj się</button></div>
   </header>
+
+  <section id="postep" aria-labelledby="post-h" hidden>
+    <h2 id="post-h">Twój postęp</h2>
+    <div class="prog" id="prog"></div>
+  </section>
 
   <section class="hero" aria-labelledby="tytul">
     <div>
@@ -158,9 +193,39 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-block:24px 36px;
 
   <footer>
     <span>Materiały do lekcji fizyki w szkole podstawowej.</span>
+    <a href="panel.html">Panel nauczyciela</a>
     <span id="upd"></span>
   </footer>
 </div>
+
+<dialog id="dlg" aria-labelledby="dlg-h">
+  <div class="dlg-in" style="position:relative">
+    <button class="x" id="dlgX" aria-label="Zamknij">×</button>
+    <h3 id="dlg-h">Konto ucznia</h3>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tLog" aria-selected="true">Logowanie</button>
+      <button role="tab" id="tReg" aria-selected="false">Załóż konto</button>
+    </div>
+    <p class="err" id="dlgOff" hidden>Logowanie zostanie włączone wkrótce. Do tego czasu możesz korzystać z prezentacji bez konta.</p>
+    <form id="fLog" class="dlg-in" style="padding:0" novalidate>
+      <div class="fld"><label for="lKod">Kod klasy</label><input id="lKod" autocomplete="off" placeholder="np. 7A-K3P9" required></div>
+      <div class="fld"><label for="lLog">Login</label><input id="lLog" autocomplete="username" required></div>
+      <div class="fld"><label for="lPas">Hasło</label><input id="lPas" type="password" autocomplete="current-password" required></div>
+      <p class="err" id="lErr" aria-live="polite"></p>
+      <button class="btn-s dark" type="submit">Zaloguj się</button>
+      <p class="fine">Nie pamiętasz hasła? Poproś nauczyciela o pomoc.</p>
+    </form>
+    <form id="fReg" class="dlg-in" style="padding:0" novalidate hidden>
+      <div class="fld"><label for="rKod">Kod klasy</label><input id="rKod" autocomplete="off" placeholder="podaje go nauczyciel" required></div>
+      <div class="fld"><label for="rLog">Login</label><input id="rLog" autocomplete="username" placeholder="np. ola.k" required><small>Imię i pierwsza litera nazwiska, tak żeby nauczyciel cię rozpoznał. Bez polskich znaków.</small></div>
+      <div class="fld"><label for="rPas">Hasło</label><input id="rPas" type="password" autocomplete="new-password" required><small>Co najmniej 6 znaków.</small></div>
+      <div class="fld"><label for="rPas2">Powtórz hasło</label><input id="rPas2" type="password" autocomplete="new-password" required></div>
+      <p class="err" id="rErr" aria-live="polite"></p>
+      <button class="btn-s dark" type="submit">Załóż konto</button>
+      <p class="fine">Nie podajesz adresu e-mail. Zapisujemy tylko login, klasę i twoje wyniki w prezentacjach. Widzi je twój nauczyciel.</p>
+    </form>
+  </div>
+</dialog>
 
 <script>
 (function(){
@@ -170,20 +235,21 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-block:24px 36px;
 */
 const MATERIALY = [
   {
-    tytul:'Ciśnienie hydrostatyczne i atmosferyczne', klasa:7, art:'cisnienie', kolor:'--k7',
+    tytul:'Ciśnienie hydrostatyczne i atmosferyczne', klasa:7, art:'cisnienie', kolor:'--k7', klucz:'cisnienie',
     url:'https://mateuszl28.github.io/cisnienie-prezentacja/',
     opis:'Dlaczego na dnie basenu bolą uszy, a w Tatrach woda wrze poniżej 100 °C? Od p = F/S, przez prawo Pascala i Archimedesa, po barometr i półkule magdeburskie.',
     tematy:['p = F/S', 'p = ρgh', 'prawo Pascala', 'naczynia połączone', 'siła wyporu', 'barometr', 'Torricelli', 'wiatr'],
     slajdy:46, pytania:18, wyzwania:52, data:'2026-11-25'
   },
   {
-    tytul:'Napięcie i natężenie prądu elektrycznego', klasa:8, art:'prad', kolor:'--k8',
+    tytul:'Napięcie i natężenie prądu elektrycznego', klasa:8, art:'prad', kolor:'--k8', klucz:'prad',
     url:'https://mateuszl28.github.io/prad-prezentacja/',
     opis:'Co płynie w przewodach, gdy zapalasz światło? Obwody, amperomierz i woltomierz, prawo Ohma, połączenia szeregowe i równoległe, moc prądu i bezpieczeństwo.',
     tematy:['I = q/t', 'U = W/q', 'prawo Ohma', 'opór', 'szeregowo i równolegle', 'moc i kWh', 'bezpiecznik', 'bezpieczeństwo'],
     slajdy:34, pytania:18, wyzwania:31, data:'2026-11-25'
   }
 ];
+window.MATERIALY = MATERIALY;
 const SKROTY = [['Quiz', 'quiz'], ['Zadania', 'zadania'], ['Krzyżówka', 'krzyzowka'], ['Słowniczek', 'slowniczek'], ['Podsumowanie', 'podsumowanie']];
 
 const $ = id => document.getElementById(id);
@@ -275,6 +341,61 @@ function frame(now){
 }
 requestAnimationFrame(frame);
 })();
+</script>
+<script type="module">
+import * as K from './konto.js';
+const $ = id => document.getElementById(id);
+const dlg = $('dlg'), acct = $('acct');
+const tab = reg => { $('tLog').setAttribute('aria-selected', !reg); $('tReg').setAttribute('aria-selected', reg); $('fLog').hidden = reg; $('fReg').hidden = !reg; };
+$('tLog').onclick = () => tab(false); $('tReg').onclick = () => tab(true);
+const open = () => { if (!K.configured) { $('dlgOff').hidden = false; $('fLog').hidden = true; $('fReg').hidden = true; } if (!dlg.open) dlg.showModal(); };
+$('loginBtn').onclick = open; $('dlgX').onclick = () => dlg.close();
+dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+if (location.hash === '#konto') setTimeout(open, 50);
+
+const busy = (form, on) => form.querySelectorAll('button,input').forEach(x => x.disabled = on);
+$('fLog').addEventListener('submit', async e => {
+  e.preventDefault(); $('lErr').textContent = ''; busy($('fLog'), true);
+  try { await K.zalogujUcznia($('lKod').value, $('lLog').value, $('lPas').value); dlg.close(); }
+  catch(err) { $('lErr').textContent = K.komunikat(err); }
+  busy($('fLog'), false);
+});
+$('fReg').addEventListener('submit', async e => {
+  e.preventDefault(); $('rErr').textContent = '';
+  if ($('rPas').value !== $('rPas2').value) { $('rErr').textContent = 'Hasła nie są takie same.'; return; }
+  busy($('fReg'), true);
+  try { await K.zarejestrujUcznia($('rKod').value, $('rLog').value, $('rPas').value); dlg.close(); location.reload(); }
+  catch(err) { $('rErr').textContent = K.komunikat(err); }
+  busy($('fReg'), false);
+});
+
+async function pokazPostep(){
+  const pr = await K.mojPostep(); const box = $('prog');
+  box.innerHTML = window.MATERIALY.filter(m => m.klucz).map(m => {
+    const d = (pr && pr.decks && pr.decks[m.klucz]) || {};
+    const w = (d.wyzwania || []).length, wt = d.wyzwaniaTotal || m.wyzwania;
+    const quiz = d.quizBest != null ? `${d.quizBest} / ${d.quizTotal || m.pytania}` : d.quizAnswered ? `w trakcie (${d.quizAnswered} / ${d.quizTotal})` : 'jeszcze nie';
+    return `<div class="pcard" style="--klass:var(${m.kolor})">
+      <h4>${m.tytul}</h4>
+      <div class="prow"><span>Wyzwania</span><b>${w} / ${wt}</b></div>
+      <div class="pbar"><i style="width:${Math.min(100, Math.round(w/wt*100))}%"></i></div>
+      <div class="prow"><span>Najlepszy wynik quizu</span><b>${quiz}</b></div>
+      <div class="prow"><span>Trening: poprawne / najlepsza seria</span><b>${d.treningPoprawne || 0} / ${d.treningBest || 0}</b></div>
+      <div class="prow"><span>Krzyżówka</span><b>${d.krzyzowka ? 'rozwiązana ✓' : '—'}</b></div>
+      <a class="btn-s" href="${m.url}" style="justify-self:start">Kontynuuj →</a>
+    </div>`;
+  }).join('');
+  $('postep').hidden = false;
+}
+
+K.naZmianeKonta(async p => {
+  if (!p) { acct.innerHTML = '<button class="btn-s dark" id="loginBtn">Zaloguj się</button>'; $('loginBtn').onclick = open; $('postep').hidden = true; return; }
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
+  const kto = p.role === 'student' ? `${esc(p.login)}<small>klasa ${esc(p.className || p.classCode)}</small>` : p.role === 'teacher' ? `${esc(p.name || p.email)}<small>nauczyciel</small>` : 'konto';
+  acct.innerHTML = `<span class="who">${kto}</span>${p.role === 'teacher' ? '<a class="btn-s" href="panel.html">Panel</a>' : ''}<button class="btn-s" id="outBtn">Wyloguj</button>`;
+  $('outBtn').onclick = () => K.wyloguj();
+  if (p.role === 'student') pokazPostep().catch(console.error); else $('postep').hidden = true;
+}).catch(console.error);
 </script>
 </body>
 </html>

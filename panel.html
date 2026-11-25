@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Panel nauczyciela · Fizyka</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232E5BD8'/%3E%3Cpath d='M18 4 9 18h6l-2 10 10-15h-6z' fill='%23FFD35A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Układ: pasek, logowanie albo panel (lista klas po lewej, tabela uczniów po prawej) */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+:root{
+  --bg:#EEF1F6; --surface:#FFFFFF; --ink:#101B33; --muted:#56607A; --line:#CAD2E1;
+  --pri:#2E5BD8; --pri-soft:rgba(46,91,216,.12); --acc:#D9951A; --good:#24865A; --bad:#C23B2C; --glow:#FFD35A;
+  --k7:#2C7BB6; --k8:#7B5BD0;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1020; --surface:#141B2F; --ink:#E5EAF5; --muted:#98A3BC; --line:#2A3450;
+  --pri:#6E95FF; --pri-soft:rgba(110,149,255,.16); --acc:#F2B940; --good:#5CC48C; --bad:#F0705F; --glow:#FFD96A;
+  --k7:#58A8E0; --k8:#A98BF0; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0B1020; --surface:#141B2F; --ink:#E5EAF5; --muted:#98A3BC; --line:#2A3450;
+  --pri:#6E95FF; --pri-soft:rgba(110,149,255,.16); --acc:#F2B940; --good:#5CC48C; --bad:#F0705F; --glow:#FFD96A;
+  --k7:#58A8E0; --k8:#A98BF0; color-scheme:dark }
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(18px, env(safe-area-inset-left, 0px));padding-right:max(18px, env(safe-area-inset-right, 0px));padding-bottom:40px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:18px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:18px;color:var(--ink);text-decoration:none}
+.logo svg{width:32px;height:32px}
+.logo span{color:var(--muted);font-weight:700}
+h1{font-family:var(--f-display);font-size:clamp(28px,4vw,40px);margin:8px 0 6px;letter-spacing:-.01em}
+h2{font-family:var(--f-display);font-size:20px;margin:0 0 10px}
+.muted{color:var(--muted)}
+.btn{font:600 14px var(--f-body);padding:9px 15px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn.dark{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb, var(--bad) 40%, var(--line))}
+.btn:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
+.auth{max-width:440px;margin:30px auto 0;display:grid;gap:14px}
+.tabs{display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:999px}
+.tabs button{flex:1;font:600 14px var(--f-body);padding:8px;border-radius:999px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+form{display:grid;gap:12px}
+.fld{display:grid;gap:4px}
+.fld label{font-size:14px;font-weight:600}
+.fld input{font:500 16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+.err{color:var(--bad);font-size:14px;margin:0;min-height:1em}
+.okm{color:var(--good);font-size:14px;margin:0}
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px;align-items:start;margin-top:16px}
+.classes{display:grid;gap:8px}
+.cls{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.cls[aria-current="true"]{border-color:var(--pri);box-shadow:0 0 0 2px var(--pri-soft)}
+.cls b{font-weight:600}
+.cls code{font:500 12px var(--f-mono);color:var(--muted)}
+.newcls{display:flex;gap:8px;margin-top:6px}
+.newcls input{flex:1;min-width:0;font:500 15px var(--f-body);padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.code{font:600 26px var(--f-mono);letter-spacing:.08em;color:var(--pri)}
+.share{display:flex;flex-wrap:wrap;gap:16px 30px;align-items:center;justify-content:space-between}
+.howto{font-size:14px;color:var(--muted);margin:6px 0 0}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin:18px 0 10px}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;min-width:860px;font-size:14px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+thead th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--bg)}
+thead tr.grp th{font-family:var(--f-display);font-size:14px;text-transform:none;letter-spacing:0;color:var(--ink)}
+th.k7{border-top:3px solid var(--k7)} th.k8{border-top:3px solid var(--k8)}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.bar-s{display:inline-block;width:60px;height:7px;border-radius:4px;background:var(--bg);vertical-align:middle;margin-right:6px;overflow:hidden}
+.bar-s i{display:block;height:100%;background:var(--pri)}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+.sumrow{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:4px}
+.sumrow div{display:flex;flex-direction:column}
+.sumrow b{font:500 22px var(--f-mono)}
+.sumrow span{font-size:12.5px;color:var(--muted)}
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="bar">
+    <a class="logo" href="./">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--pri)"/><path d="M18 4 9 18h6l-2 10 10-15h-6z" fill="var(--glow)"/></svg>
+      Fizyka <span>· panel nauczyciela</span>
+    </a>
+    <div id="who"></div>
+  </header>
+
+  <div id="off" class="box auth" hidden>
+    <h2>Logowanie nie jest jeszcze włączone</h2>
+    <p class="muted">Trzeba połączyć stronę z projektem Firebase. Instrukcja jest w pliku INSTRUKCJA.md w repozytorium.</p>
+  </div>
+
+  <div id="viewAuth" class="box auth" hidden>
+    <h1>Panel nauczyciela</h1>
+    <p class="muted" style="margin:0">Twórz klasy, podawaj uczniom kody i sprawdzaj ich wyniki w prezentacjach.</p>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tL" aria-selected="true">Logowanie</button>
+      <button role="tab" id="tR" aria-selected="false">Nowe konto</button>
+    </div>
+    <form id="fL" novalidate>
+      <div class="fld"><label for="lE">Adres e-mail</label><input id="lE" type="email" autocomplete="username" required></div>
+      <div class="fld"><label for="lP">Hasło</label><input id="lP" type="password" autocomplete="current-password" required></div>
+      <p class="err" id="lErr" aria-live="polite"></p>
+      <button class="btn dark" type="submit">Zaloguj się</button>
+      <button class="btn" type="button" id="forgot" style="justify-self:start">Nie pamiętam hasła</button>
+    </form>
+    <form id="fR" novalidate hidden>
+      <div class="fld"><label for="rN">Imię i nazwisko</label><input id="rN" autocomplete="name" required></div>
+      <div class="fld"><label for="rE">Adres e-mail</label><input id="rE" type="email" autocomplete="username" required></div>
+      <div class="fld"><label for="rP">Hasło</label><input id="rP" type="password" autocomplete="new-password" required></div>
+      <div class="fld"><label for="rP2">Powtórz hasło</label><input id="rP2" type="password" autocomplete="new-password" required></div>
+      <p class="err" id="rErr" aria-live="polite"></p>
+      <button class="btn dark" type="submit">Załóż konto nauczyciela</button>
+    </form>
+  </div>
+
+  <div id="viewStudent" class="box auth" hidden>
+    <h2>To panel dla nauczycieli</h2>
+    <p class="muted">Jesteś zalogowany jako uczeń. Swoje wyniki zobaczysz na stronie głównej.</p>
+    <a class="btn dark" href="./" style="justify-self:start">Wróć do materiałów</a>
+  </div>
+
+  <div id="viewPanel" hidden>
+    <h1>Twoje klasy</h1>
+    <div class="layout">
+      <aside>
+        <div class="classes" id="clsList"></div>
+        <form class="newcls" id="fNew" novalidate>
+          <label for="newName" style="position:absolute;left:-9999px">Nazwa nowej klasy</label>
+          <input id="newName" placeholder="Nowa klasa, np. 7A" required maxlength="40">
+          <button class="btn dark" type="submit">Dodaj</button>
+        </form>
+        <p class="err" id="nErr" aria-live="polite"></p>
+      </aside>
+      <section id="clsView">
+        <div class="box empty" id="noCls">Dodaj pierwszą klasę po lewej. Dostaniesz kod, który podasz uczniom.</div>
+        <div id="clsBody" hidden>
+          <div class="box share">
+            <div>
+              <div class="muted" style="font-size:13px">Kod klasy <span id="cName"></span></div>
+              <div class="code" id="cCode"></div>
+              <p class="howto">Uczniowie wchodzą na <b>mateuszl28.github.io/fizyka</b> → „Zaloguj się” → „Załóż konto” i wpisują ten kod.</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn" id="copyCode">Kopiuj kod</button>
+              <button class="btn" id="copyMsg">Kopiuj wiadomość dla uczniów</button>
+            </div>
+          </div>
+          <div class="tools">
+            <div class="sumrow" id="sum"></div>
+            <div style="display:flex;gap:8px">
+              <button class="btn" id="refresh">Odśwież</button>
+              <button class="btn" id="csv">Pobierz CSV</button>
+            </div>
+          </div>
+          <div class="tablewrap"><table id="tbl"></table></div>
+          <p class="muted" style="font-size:13px;margin-top:10px">„Usuń” kasuje wyniki i profil ucznia z tej klasy. Uczeń, który zapomni hasła, może założyć nowe konto, a stare usuniesz tutaj.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as K from './konto.js';
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
+const DECKS = [{k:'cisnienie', n:'Ciśnienie (kl. 7)', w:52, q:18, c:'k7'}, {k:'prad', n:'Prąd (kl. 8)', w:31, q:18, c:'k8'}];
+const show = v => ['off', 'viewAuth', 'viewStudent', 'viewPanel'].forEach(id => $(id).hidden = id !== v);
+let klasy = [], wybrana = null, dane = [];
+
+if (!K.configured) show('off');
+
+const tab = r => { $('tL').setAttribute('aria-selected', !r); $('tR').setAttribute('aria-selected', r); $('fL').hidden = r; $('fR').hidden = !r; };
+$('tL').onclick = () => tab(false); $('tR').onclick = () => tab(true);
+const busy = (f, on) => f.querySelectorAll('button,input').forEach(x => x.disabled = on);
+$('fL').addEventListener('submit', async e => {
+  e.preventDefault(); $('lErr').textContent = ''; busy($('fL'), true);
+  try { await K.zalogujNauczyciela($('lE').value, $('lP').value); } catch(err) { $('lErr').textContent = K.komunikat(err); }
+  busy($('fL'), false);
+});
+$('forgot').onclick = async () => {
+  if (!$('lE').value.trim()) { $('lErr').textContent = 'Wpisz adres e-mail, a wyślemy link do zmiany hasła.'; return; }
+  try { await K.resetHaslaNauczyciela($('lE').value); $('lErr').textContent = ''; $('lErr').insertAdjacentHTML('afterend', '<p class="okm">Wysłaliśmy link do zmiany hasła. Sprawdź skrzynkę, także folder spam.</p>'); }
+  catch(err) { $('lErr').textContent = K.komunikat(err); }
+};
+$('fR').addEventListener('submit', async e => {
+  e.preventDefault(); $('rErr').textContent = '';
+  if (!$('rN').value.trim()) { $('rErr').textContent = 'Wpisz imię i nazwisko.'; return; }
+  if ($('rP').value !== $('rP2').value) { $('rErr').textContent = 'Hasła nie są takie same.'; return; }
+  busy($('fR'), true);
+  try { await K.zarejestrujNauczyciela($('rE').value, $('rP').value, $('rN').value); location.reload(); } catch(err) { $('rErr').textContent = K.komunikat(err); }
+  busy($('fR'), false);
+});
+
+function rysujKlasy(){
+  $('clsList').innerHTML = klasy.map(k => `<button class="cls" data-k="${esc(k.kod)}" aria-current="${wybrana === k.kod}"><b>${esc(k.name)}</b><code>${esc(k.kod)}</code></button>`).join('');
+  $('clsList').querySelectorAll('.cls').forEach(b => b.onclick = () => wybierz(b.dataset.k));
+  $('noCls').hidden = !!wybrana; $('clsBody').hidden = !wybrana;
+}
+async function wczytajKlasy(){ klasy = await K.mojeKlasy(); if (!wybrana && klasy.length) wybrana = klasy[0].kod; rysujKlasy(); if (wybrana) await wybierz(wybrana); }
+async function wybierz(kod){
+  wybrana = kod; rysujKlasy();
+  const k = klasy.find(x => x.kod === kod);
+  $('cCode').textContent = kod; $('cName').textContent = '· ' + (k ? k.name : '');
+  $('tbl').innerHTML = '<tbody><tr><td class="empty">Wczytuję…</td></tr></tbody>';
+  try { dane = await K.uczniowieKlasy(kod); rysujTabele(); } catch(err) { $('tbl').innerHTML = `<tbody><tr><td class="empty">${esc(K.komunikat(err))}</td></tr></tbody>`; }
+}
+const data = t => t && t.toDate ? t.toDate() : null;
+const kiedy = d => d ? d.toLocaleString('pl-PL', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : '—';
+function wiersz(s){
+  return DECKS.map(D => {
+    const d = (s.decks && s.decks[D.k]) || {}, w = (d.wyzwania || []).length, wt = d.wyzwaniaTotal || D.w;
+    return {w, wt, quiz:d.quizBest != null ? `${d.quizBest}/${d.quizTotal || D.q}` : d.quizAnswered ? `${d.quizLast}/${d.quizAnswered}…` : '—', tren:d.treningPoprawne || 0, best:d.treningBest || 0, krz:d.krzyzowka ? '✓' : '—'};
+  });
+}
+function rysujTabele(){
+  const n = dane.length;
+  const ostatnio = dane.filter(s => { const d = data(s.updatedAt); return d && Date.now() - d < 7*864e5; }).length;
+  $('sum').innerHTML = `<div><b>${n}</b><span>uczniów</span></div><div><b>${ostatnio}</b><span>aktywnych w tym tygodniu</span></div>`;
+  if (!n) { $('tbl').innerHTML = '<tbody><tr><td class="empty">Nikt jeszcze nie dołączył do tej klasy. Podaj uczniom kod.</td></tr></tbody>'; return; }
+  const head = `<thead><tr class="grp"><th></th>${DECKS.map(D => `<th colspan="4" class="${D.c}">${D.n}</th>`).join('')}<th colspan="2"></th></tr>
+    <tr><th>Uczeń</th>${DECKS.map(() => '<th>Wyzwania</th><th>Quiz</th><th>Trening</th><th>Krzyżówka</th>').join('')}<th>Ostatnio</th><th></th></tr></thead>`;
+  const body = dane.map(s => `<tr><td><b>${esc(s.login)}</b></td>${wiersz(s).map(r => `<td class="n"><span class="bar-s"><i style="width:${Math.round(r.w/r.wt*100)}%"></i></span>${r.w}/${r.wt}</td><td class="n">${r.quiz}</td><td class="n">${r.tren} (seria ${r.best})</td><td>${r.krz}</td>`).join('')}<td class="n">${kiedy(data(s.updatedAt))}</td><td><button class="btn danger" data-u="${esc(s.uid)}">Usuń</button></td></tr>`).join('');
+  $('tbl').innerHTML = head + '<tbody>' + body + '</tbody>';
+  $('tbl').querySelectorAll('button[data-u]').forEach(b => b.onclick = async () => {
+    if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Na pewno usunąć?'; setTimeout(() => { b.dataset.sure = ''; b.textContent = 'Usuń'; }, 4000); return; }
+    b.disabled = true;
+    try { await K.usunUcznia(b.dataset.u); await wybierz(wybrana); } catch(err) { b.textContent = K.komunikat(err); }
+  });
+}
+$('fNew').addEventListener('submit', async e => {
+  e.preventDefault(); $('nErr').textContent = '';
+  const nm = $('newName').value.trim(); if (!nm) { $('nErr').textContent = 'Wpisz nazwę klasy.'; return; }
+  busy($('fNew'), true);
+  try { const kod = await K.utworzKlase(nm); $('newName').value = ''; wybrana = kod; await wczytajKlasy(); } catch(err) { $('nErr').textContent = K.komunikat(err); }
+  busy($('fNew'), false);
+});
+const kopiuj = async (txt, btn) => { const t = btn.textContent; try { await navigator.clipboard.writeText(txt); btn.textContent = 'Skopiowano ✓'; } catch(e) { btn.textContent = 'Zaznacz i skopiuj ręcznie'; } setTimeout(() => btn.textContent = t, 2000); };
+$('copyCode').onclick = () => kopiuj(wybrana, $('copyCode'));
+$('copyMsg').onclick = () => kopiuj(`Materiały z fizyki: ${K.HUB}\nKliknij „Zaloguj się” → „Załóż konto” i wpisz kod klasy: ${wybrana}\nJako login wpisz imię i pierwszą literę nazwiska, np. ola.k (bez polskich znaków).`, $('copyMsg'));
+$('refresh').onclick = () => wybierz(wybrana);
+$('csv').onclick = () => {
+  const k = klasy.find(x => x.kod === wybrana);
+  const rows = [['Uczeń', ...DECKS.flatMap(D => [D.n + ' wyzwania', D.n + ' quiz', D.n + ' trening poprawne', D.n + ' krzyżówka']), 'Ostatnia aktywność']];
+  dane.forEach(s => rows.push([s.login, ...wiersz(s).flatMap(r => [`${r.w}/${r.wt}`, r.quiz, r.tren, r.krz === '✓' ? 'tak' : 'nie']), kiedy(data(s.updatedAt))]));
+  const csv = '﻿' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'})); a.download = `wyniki-${(k ? k.name : wybrana).replace(/\s+/g, '_')}.csv`; a.click();
+};
+
+K.naZmianeKonta(async p => {
+  if (!p) { $('who').innerHTML = ''; show('viewAuth'); return; }
+  $('who').innerHTML = `<span class="muted" style="margin-right:10px">${esc(p.name || p.email || p.login || '')}</span><button class="btn" id="out">Wyloguj</button>`;
+  $('out').onclick = () => K.wyloguj();
+  if (p.role === 'teacher') { show('viewPanel'); try { await wczytajKlasy(); } catch(err) { $('nErr').textContent = K.komunikat(err); } }
+  else show('viewStudent');
+}).catch(console.error);
+</script>
+</body>
+</html>

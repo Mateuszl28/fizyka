@@ -1,0 +1,45 @@
+rules_version = '2';
+// Reguły bezpieczeństwa bazy Firestore dla strony „Fizyka: materiały dla uczniów”.
+// Wklej je w konsoli Firebase: Firestore Database → Reguły (Rules) → Opublikuj.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isTeacher() { return signedIn() && exists(/databases/$(database)/documents/teachers/$(request.auth.uid)); }
+    function klasa(kod) { return get(/databases/$(database)/documents/classes/$(kod)).data; }
+    function uczen(uid) { return get(/databases/$(database)/documents/users/$(uid)).data; }
+
+    // Nauczyciele: każdy widzi i zmienia tylko swój profil.
+    match /teachers/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid && request.resource.data.role == 'teacher';
+    }
+
+    // Klasy: kod klasy można sprawdzić przy rejestracji; listę i zmiany widzi tylko nauczyciel klasy.
+    match /classes/{kod} {
+      allow get: if true;
+      allow list: if signedIn() && resource.data.teacherUid == request.auth.uid;
+      allow create: if isTeacher() && request.resource.data.teacherUid == request.auth.uid;
+      allow update: if signedIn() && resource.data.teacherUid == request.auth.uid && request.resource.data.teacherUid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.teacherUid == request.auth.uid;
+    }
+
+    // Profile uczniów: uczeń tworzy swój profil tylko w istniejącej klasie.
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || resource.data.teacherUid == request.auth.uid);
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.role == 'student'
+        && exists(/databases/$(database)/documents/classes/$(request.resource.data.classCode))
+        && request.resource.data.teacherUid == klasa(request.resource.data.classCode).teacherUid;
+      allow delete: if signedIn() && resource.data.teacherUid == request.auth.uid;
+    }
+
+    // Postęp: uczeń zapisuje tylko swój, nauczyciel czyta postęp uczniów swoich klas.
+    match /progress/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || resource.data.teacherUid == request.auth.uid);
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.classCode == uczen(uid).classCode
+        && request.resource.data.teacherUid == uczen(uid).teacherUid;
+      allow delete: if signedIn() && resource.data.teacherUid == request.auth.uid;
+    }
+  }
+}
