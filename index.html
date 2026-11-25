@@ -378,7 +378,7 @@ requestAnimationFrame(frame);
 })();
 </script>
 <script type="module">
-import * as K from './konto.js';
+import * as K from './konto.js?v=3';
 const $ = id => document.getElementById(id);
 const dlg = $('dlg'), acct = $('acct');
 const tab = reg => { $('tLog').setAttribute('aria-selected', !reg); $('tReg').setAttribute('aria-selected', reg); $('fLog').hidden = reg; $('fReg').hidden = !reg; };

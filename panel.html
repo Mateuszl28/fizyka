@@ -251,7 +251,7 @@ dialog::backdrop{background:rgba(11,16,32,.45)}
 <div id="printArea"></div>
 
 <script type="module">
-import * as K from './konto.js';
+import * as K from './konto.js?v=3';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
 const DECKS = [{k:'cisnienie', n:'Ciśnienie (kl. 7)', w:52, q:18, c:'k7'}, {k:'prad', n:'Prąd (kl. 8)', w:31, q:18, c:'k8'}];
