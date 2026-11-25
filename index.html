@@ -129,6 +129,25 @@ dialog::backdrop{background:rgba(11,16,32,.45)}
 .pbar i{display:block;height:100%;background:var(--klass)}
 .prow{display:flex;justify-content:space-between;gap:10px;font-size:14px}
 .prow b{font-family:var(--f-mono);font-weight:500}
+.me{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;margin-top:10px}
+.mecls{color:var(--muted);margin:4px 0 0}
+.pts{display:flex;flex-direction:column;align-items:center;background:var(--ink);color:var(--bg);border-radius:16px;padding:12px 22px;min-width:130px}
+.pts b{font:700 38px var(--f-display);line-height:1;font-variant-numeric:tabular-nums;color:var(--glow)}
+.pts span{font-size:13px;opacity:.85}
+.stabs{display:flex;flex-wrap:wrap;gap:6px;margin:20px 0 4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px;width:max-content;max-width:100%}
+.stabs button{font:600 15px var(--f-body);padding:9px 18px;border-radius:999px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.stabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.pcard .links{display:flex;flex-wrap:wrap;gap:8px}
+.big{font:700 28px var(--f-display);font-variant-numeric:tabular-nums}
+.ptable{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:15px;margin-top:16px}
+.ptable th,.ptable td{padding:10px 14px;border-bottom:1px solid var(--line);text-align:left}
+.ptable td.n,.ptable th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.ptable thead th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--bg)}
+.ptable tfoot td{font-weight:700}
+.ptwrap{overflow-x:auto}
+.rules{display:grid;gap:6px;margin:18px 0 0;padding:0;list-style:none;font-size:14px}
+.rules li{display:flex;justify-content:space-between;gap:12px;padding:8px 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.rules b{font-family:var(--f-mono);font-weight:500;white-space:nowrap}
 @media (max-width:860px){
   .hero{grid-template-columns:minmax(0,1fr);gap:24px;padding-block:16px 28px}
   .bar nav{display:none}
@@ -151,8 +170,24 @@ dialog::backdrop{background:rgba(11,16,32,.45)}
   </header>
 
   <section id="postep" aria-labelledby="post-h" hidden>
-    <h2 id="post-h">Twój postęp</h2>
-    <div class="prog" id="prog"></div>
+    <div class="me">
+      <div>
+        <p class="eyebrow">Moje konto</p>
+        <h2 id="post-h">Cześć, <span id="meName"></span>!</h2>
+        <p class="mecls" id="meCls"></p>
+      </div>
+      <div class="pts" aria-label="Twoje punkty"><b id="mePts">0</b><span>punktów</span></div>
+    </div>
+    <div class="stabs" role="tablist" aria-label="Moje materiały" id="stabs">
+      <button role="tab" data-t="mat" aria-selected="true">Materiały</button>
+      <button role="tab" data-t="quiz" aria-selected="false">Quizy</button>
+      <button role="tab" data-t="zad" aria-selected="false">Zadania</button>
+      <button role="tab" data-t="pkt" aria-selected="false">Punkty</button>
+    </div>
+    <div id="stab-mat" class="prog" role="tabpanel"></div>
+    <div id="stab-quiz" class="prog" role="tabpanel" hidden></div>
+    <div id="stab-zad" class="prog" role="tabpanel" hidden></div>
+    <div id="stab-pkt" role="tabpanel" hidden></div>
   </section>
 
   <section class="hero" aria-labelledby="tytul">
@@ -369,32 +404,56 @@ $('fReg').addEventListener('submit', async e => {
   busy($('fReg'), false);
 });
 
-async function pokazPostep(){
-  const pr = await K.mojPostep(); const box = $('prog');
-  box.innerHTML = window.MATERIALY.filter(m => m.klucz).map(m => {
-    const d = (pr && pr.decks && pr.decks[m.klucz]) || {};
-    const w = (d.wyzwania || []).length, wt = d.wyzwaniaTotal || m.wyzwania;
-    const quiz = d.quizBest != null ? `${d.quizBest} / ${d.quizTotal || m.pytania}` : d.quizAnswered ? `w trakcie (${d.quizAnswered} / ${d.quizTotal})` : 'jeszcze nie';
-    return `<div class="pcard" style="--klass:var(${m.kolor})">
+/* zakładki ucznia */
+const TABS = ['mat', 'quiz', 'zad', 'pkt'];
+$('stabs').querySelectorAll('button').forEach(b => b.onclick = () => {
+  $('stabs').querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', x === b));
+  TABS.forEach(t => $('stab-' + t).hidden = t !== b.dataset.t);
+});
+const bar = (a, b) => `<div class="pbar"><i style="width:${b ? Math.min(100, Math.round(a/b*100)) : 0}%"></i></div>`;
+async function pokazPostep(p){
+  const pr = await K.mojPostep();
+  const decks = (pr && pr.decks) || {}, pk = K.punkty(decks), M = window.MATERIALY.filter(m => m.klucz);
+  const D = m => decks[m.klucz] || {}, P = m => pk.parts[m.klucz] || {wyzwania:0, quiz:0, trening:0, krzyzowka:0, gra:0, suma:0};
+  $('meName').textContent = p.login; $('meCls').textContent = 'Klasa ' + (p.className || p.classCode);
+  $('mePts').textContent = pk.total;
+  $('stab-mat').innerHTML = M.map(m => { const d = D(m), w = (d.wyzwania || []).length, wt = d.wyzwaniaTotal || m.wyzwania; return `
+    <div class="pcard" style="--klass:var(${m.kolor})">
       <h4>${m.tytul}</h4>
-      <div class="prow"><span>Wyzwania</span><b>${w} / ${wt}</b></div>
-      <div class="pbar"><i style="width:${Math.min(100, Math.round(w/wt*100))}%"></i></div>
-      <div class="prow"><span>Najlepszy wynik quizu</span><b>${quiz}</b></div>
-      <div class="prow"><span>Trening: poprawne / najlepsza seria</span><b>${d.treningPoprawne || 0} / ${d.treningBest || 0}</b></div>
+      <div class="prow"><span>Klasa ${m.klasa} · ${m.slajdy} slajdów</span><b>${P(m).suma} pkt</b></div>
+      <div class="prow"><span>Zaliczone wyzwania</span><b>${w} / ${wt}</b></div>${bar(w, wt)}
+      <div class="links"><a class="btn-s dark" href="${m.url}">Otwórz prezentację →</a><a class="btn-s" href="${m.url}#podsumowanie">Podsumowanie</a><a class="btn-s" href="${m.url}#slowniczek">Słowniczek</a></div>
+    </div>`; }).join('');
+  $('stab-quiz').innerHTML = M.map(m => { const d = D(m), t = d.quizTotal || m.pytania, st = d.quizBest != null ? `${d.quizBest} / ${t}` : d.quizAnswered ? `w trakcie: ${d.quizAnswered} z ${t} pytań` : 'jeszcze nie rozwiązany'; return `
+    <div class="pcard" style="--klass:var(${m.kolor})">
+      <h4>Quiz: ${m.tytul}</h4>
+      <div class="prow"><span>Najlepszy wynik</span><b>${st}</b></div>${bar(d.quizBest || 0, t)}
+      <div class="prow"><span>Punkty za quiz</span><b>${P(m).quiz} pkt</b></div>
+      <div class="links"><a class="btn-s dark" href="${m.url}#quiz">${d.quizBest != null ? 'Popraw wynik' : 'Rozwiąż quiz'} →</a></div>
+    </div>`; }).join('');
+  $('stab-zad').innerHTML = M.map(m => { const d = D(m); return `
+    <div class="pcard" style="--klass:var(${m.kolor})">
+      <h4>Zadania: ${m.tytul}</h4>
+      <div class="prow"><span>Trening: poprawne zadania</span><b>${d.treningPoprawne || 0}</b></div>
+      <div class="prow"><span>Najlepsza seria bez błędu</span><b>${d.treningBest || 0}</b></div>
       <div class="prow"><span>Krzyżówka</span><b>${d.krzyzowka ? 'rozwiązana ✓' : '—'}</b></div>
-      <a class="btn-s" href="${m.url}" style="justify-self:start">Kontynuuj →</a>
-    </div>`;
-  }).join('');
+      <div class="prow"><span>Gra „posegreguj”</span><b>${d.gra ? 'ukończona ✓' : '—'}</b></div>
+      <div class="links"><a class="btn-s dark" href="${m.url}#zadania">Zadania i trening →</a><a class="btn-s" href="${m.url}#krzyzowka">Krzyżówka</a><a class="btn-s" href="${m.url}#segreguj">Gra</a></div>
+    </div>`; }).join('');
+  const rows = M.map(m => { const x = P(m); return `<tr><td>${m.tytul}</td><td class="n">${x.wyzwania}</td><td class="n">${x.quiz}</td><td class="n">${x.trening}</td><td class="n">${x.krzyzowka + x.gra}</td><td class="n"><b>${x.suma}</b></td></tr>`; }).join('');
+  $('stab-pkt').innerHTML = `<div class="ptwrap"><table class="ptable"><thead><tr><th>Prezentacja</th><th class="n">Wyzwania</th><th class="n">Quiz</th><th class="n">Trening</th><th class="n">Krzyżówka i gra</th><th class="n">Razem</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td colspan="5">Wszystkie punkty</td><td class="n">${pk.total}</td></tr></tfoot></table></div>
+    <h3 style="font-family:var(--f-display);margin:22px 0 0">Jak zdobywać punkty</h3><ul class="rules">${K.ZASADY.map(([a, b]) => `<li><span>${a}</span><b>${b}</b></li>`).join('')}</ul>`;
   $('postep').hidden = false;
+  document.querySelector('.hero').hidden = true;
 }
 
 K.naZmianeKonta(async p => {
-  if (!p) { acct.innerHTML = '<button class="btn-s dark" id="loginBtn">Zaloguj się</button>'; $('loginBtn').onclick = open; $('postep').hidden = true; return; }
+  if (!p) { acct.innerHTML = '<button class="btn-s dark" id="loginBtn">Zaloguj się</button>'; $('loginBtn').onclick = open; $('postep').hidden = true; document.querySelector('.hero').hidden = false; return; }
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
   const kto = p.role === 'student' ? `${esc(p.login)}<small>klasa ${esc(p.className || p.classCode)}</small>` : p.role === 'teacher' ? `${esc(p.name || p.email)}<small>nauczyciel</small>` : 'konto';
   acct.innerHTML = `<span class="who">${kto}</span>${p.role === 'teacher' ? '<a class="btn-s" href="panel.html">Panel</a>' : ''}<button class="btn-s" id="outBtn">Wyloguj</button>`;
   $('outBtn').onclick = () => K.wyloguj();
-  if (p.role === 'student') pokazPostep().catch(console.error); else $('postep').hidden = true;
+  if (p.role === 'student') pokazPostep(p).catch(console.error); else { $('postep').hidden = true; document.querySelector('.hero').hidden = false; }
 }).catch(console.error);
 </script>
 </body>

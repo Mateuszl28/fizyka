@@ -77,6 +77,8 @@ tr:last-child td{border-bottom:0}
 .bar-s{display:inline-block;width:60px;height:7px;border-radius:4px;background:var(--bg);vertical-align:middle;margin-right:6px;overflow:hidden}
 .bar-s i{display:block;height:100%;background:var(--pri)}
 .empty{padding:30px;text-align:center;color:var(--muted)}
+.ptsc{display:inline-block;min-width:44px;text-align:center;padding:2px 8px;border-radius:999px;background:var(--ink);color:var(--glow);font:700 14px var(--f-mono)}
+.rules{margin:14px 0 0;font-size:13px;color:var(--muted)}
 .sumrow{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:4px}
 .sumrow div{display:flex;flex-direction:column}
 .sumrow b{font:500 22px var(--f-mono)}
@@ -163,6 +165,7 @@ tr:last-child td{border-bottom:0}
             </div>
           </div>
           <div class="tablewrap"><table id="tbl"></table></div>
+          <p class="rules" id="rules"></p>
           <p class="muted" style="font-size:13px;margin-top:10px">„Usuń” kasuje wyniki i profil ucznia z tej klasy. Uczeń, który zapomni hasła, może założyć nowe konto, a stare usuniesz tutaj.</p>
         </div>
       </section>
@@ -179,6 +182,7 @@ const show = v => ['off', 'viewAuth', 'viewStudent', 'viewPanel'].forEach(id => 
 let klasy = [], wybrana = null, dane = [];
 
 if (!K.configured) show('off');
+$('rules').innerHTML = '<b>Punktacja:</b> ' + K.ZASADY.map(([a, b]) => `${a.toLowerCase()}: ${b}`).join(' · ');
 
 const tab = r => { $('tL').setAttribute('aria-selected', !r); $('tR').setAttribute('aria-selected', r); $('fL').hidden = r; $('fR').hidden = !r; };
 $('tL').onclick = () => tab(false); $('tR').onclick = () => tab(true);
@@ -225,12 +229,15 @@ function wiersz(s){
 }
 function rysujTabele(){
   const n = dane.length;
+  dane.forEach(s => s._pk = K.punkty(s.decks));
+  dane.sort((a, b) => b._pk.total - a._pk.total || a.login.localeCompare(b.login, 'pl'));
   const ostatnio = dane.filter(s => { const d = data(s.updatedAt); return d && Date.now() - d < 7*864e5; }).length;
-  $('sum').innerHTML = `<div><b>${n}</b><span>uczniów</span></div><div><b>${ostatnio}</b><span>aktywnych w tym tygodniu</span></div>`;
+  const suma = dane.reduce((a, s) => a + s._pk.total, 0);
+  $('sum').innerHTML = `<div><b>${n}</b><span>uczniów</span></div><div><b>${n ? Math.round(suma/n) : 0}</b><span>średnio punktów</span></div><div><b>${n ? dane[0]._pk.total : 0}</b><span>najwięcej punktów</span></div><div><b>${ostatnio}</b><span>aktywnych w tym tygodniu</span></div>`;
   if (!n) { $('tbl').innerHTML = '<tbody><tr><td class="empty">Nikt jeszcze nie dołączył do tej klasy. Podaj uczniom kod.</td></tr></tbody>'; return; }
-  const head = `<thead><tr class="grp"><th></th>${DECKS.map(D => `<th colspan="4" class="${D.c}">${D.n}</th>`).join('')}<th colspan="2"></th></tr>
-    <tr><th>Uczeń</th>${DECKS.map(() => '<th>Wyzwania</th><th>Quiz</th><th>Trening</th><th>Krzyżówka</th>').join('')}<th>Ostatnio</th><th></th></tr></thead>`;
-  const body = dane.map(s => `<tr><td><b>${esc(s.login)}</b></td>${wiersz(s).map(r => `<td class="n"><span class="bar-s"><i style="width:${Math.round(r.w/r.wt*100)}%"></i></span>${r.w}/${r.wt}</td><td class="n">${r.quiz}</td><td class="n">${r.tren} (seria ${r.best})</td><td>${r.krz}</td>`).join('')}<td class="n">${kiedy(data(s.updatedAt))}</td><td><button class="btn danger" data-u="${esc(s.uid)}">Usuń</button></td></tr>`).join('');
+  const head = `<thead><tr class="grp"><th colspan="3"></th>${DECKS.map(D => `<th colspan="5" class="${D.c}">${D.n}</th>`).join('')}<th colspan="2"></th></tr>
+    <tr><th>#</th><th>Uczeń</th><th>Punkty</th>${DECKS.map(() => '<th>Pkt</th><th>Wyzwania</th><th>Quiz</th><th>Trening</th><th>Krzyżówka</th>').join('')}<th>Ostatnio</th><th></th></tr></thead>`;
+  const body = dane.map((s, i) => `<tr><td class="n">${i + 1}.</td><td><b>${esc(s.login)}</b></td><td class="n"><b class="ptsc">${s._pk.total}</b></td>${wiersz(s).map((r, k) => `<td class="n">${(s._pk.parts[DECKS[k].k] || {suma:0}).suma}</td><td class="n"><span class="bar-s"><i style="width:${Math.round(r.w/r.wt*100)}%"></i></span>${r.w}/${r.wt}</td><td class="n">${r.quiz}</td><td class="n">${r.tren} (seria ${r.best})</td><td>${r.krz}</td>`).join('')}<td class="n">${kiedy(data(s.updatedAt))}</td><td><button class="btn danger" data-u="${esc(s.uid)}">Usuń</button></td></tr>`).join('');
   $('tbl').innerHTML = head + '<tbody>' + body + '</tbody>';
   $('tbl').querySelectorAll('button[data-u]').forEach(b => b.onclick = async () => {
     if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Na pewno usunąć?'; setTimeout(() => { b.dataset.sure = ''; b.textContent = 'Usuń'; }, 4000); return; }
@@ -251,8 +258,8 @@ $('copyMsg').onclick = () => kopiuj(`Materiały z fizyki: ${K.HUB}\nKliknij „Z
 $('refresh').onclick = () => wybierz(wybrana);
 $('csv').onclick = () => {
   const k = klasy.find(x => x.kod === wybrana);
-  const rows = [['Uczeń', ...DECKS.flatMap(D => [D.n + ' wyzwania', D.n + ' quiz', D.n + ' trening poprawne', D.n + ' krzyżówka']), 'Ostatnia aktywność']];
-  dane.forEach(s => rows.push([s.login, ...wiersz(s).flatMap(r => [`${r.w}/${r.wt}`, r.quiz, r.tren, r.krz === '✓' ? 'tak' : 'nie']), kiedy(data(s.updatedAt))]));
+  const rows = [['Miejsce', 'Uczeń', 'Punkty', ...DECKS.flatMap(D => [D.n + ' punkty', D.n + ' wyzwania', D.n + ' quiz', D.n + ' trening poprawne', D.n + ' krzyżówka']), 'Ostatnia aktywność']];
+  dane.forEach((s, i) => rows.push([i + 1, s.login, s._pk.total, ...wiersz(s).flatMap((r, k) => [(s._pk.parts[DECKS[k].k] || {suma:0}).suma, `${r.w}/${r.wt}`, r.quiz, r.tren, r.krz === '✓' ? 'tak' : 'nie']), kiedy(data(s.updatedAt))]));
   const csv = '﻿' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'})); a.download = `wyniki-${(k ? k.name : wybrana).replace(/\s+/g, '_')}.csv`; a.click();
 };

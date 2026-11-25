@@ -37,6 +37,24 @@ const BLEDY = {
 };
 export const komunikat = e => BLEDY[e && e.code] || (e && e.message) || 'Coś poszło nie tak. Spróbuj ponownie.';
 
+/* ---------- punkty ---------- */
+export const PKT = {wyzwanie:5, quiz:2, trening:3, treningMax:20, krzyzowka:15, gra:10};
+export const ZASADY = [
+  ['Wyzwanie zaliczone w prezentacji', `${PKT.wyzwanie} pkt`],
+  ['Każda poprawna odpowiedź w quizie (liczy się najlepszy wynik)', `${PKT.quiz} pkt`],
+  ['Każde poprawnie rozwiązane zadanie w treningu', `${PKT.trening} pkt (do ${PKT.treningMax} zadań)`],
+  ['Rozwiązana krzyżówka', `${PKT.krzyzowka} pkt`],
+  ['Ukończona gra „posegreguj”', `${PKT.gra} pkt`]];
+export function punkty(decks){
+  const parts = {}; let total = 0;
+  for (const [k, d] of Object.entries(decks || {})) {
+    const p = {wyzwania:(d.wyzwania || []).length*PKT.wyzwanie, quiz:(d.quizBest || 0)*PKT.quiz, trening:Math.min(d.treningPoprawne || 0, PKT.treningMax)*PKT.trening, krzyzowka:d.krzyzowka ? PKT.krzyzowka : 0, gra:d.gra ? PKT.gra : 0};
+    p.suma = p.wyzwania + p.quiz + p.trening + p.krzyzowka + p.gra;
+    parts[k] = p; total += p.suma;
+  }
+  return {total, parts};
+}
+
 /* ---------- konto ---------- */
 let profil = null;
 export const aktualnyProfil = () => profil;
